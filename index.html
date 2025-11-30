@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Finance Calculator</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- ถ้าใช้ Firebase (Auth) ให้วางสคริปต์ของ Firebase ที่นี่ -->
+</head>
+<body>
+  <header>
+    <h1>เครื่องมือคำนวณการเงิน</h1>
+  </header>
+
+  <nav>
+    <button onclick="show('expense')">รายรับ-รายจ่าย</button>
+    <button onclick="show('tax')">ภาษี</button>
+    <button onclick="show('interest')">ดอกเบี้ย</button>
+  </nav>
+
+  <main id="app"></main>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
