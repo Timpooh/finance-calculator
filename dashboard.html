@@ -4,16 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard</title>
-
   <link rel="stylesheet" href="style.css">
-
-  <!-- Firebase + Chart -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <script src="firebase.js"></script>
+  <script src="script.js"></script>
 </head>
 <body>
 
@@ -22,16 +18,13 @@
     <button id="btn-logout">Logout</button>
   </header>
 
-  <!-- ปุ่มเลือกหน้า -->
   <nav class="section">
     <button id="btn-expense">รายรับ-รายจ่าย</button>
     <button id="btn-tax">ภาษี</button>
     <button id="btn-interest">ดอกเบี้ย</button>
   </nav>
 
-  <!-- พื้นที่แสดงผลคำนวณ -->
   <div id="app" class="section"></div>
 
-  <script src="script.js"></script>
 </body>
 </html>
