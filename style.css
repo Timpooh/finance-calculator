@@ -29,14 +29,8 @@ button {
   margin:6px 0;
   border-radius:10px;
   cursor:pointer;
-}
-
-.btn-delete {
-  background:#ef4444;
-  padding:3px 8px;
-  margin-left:10px;
-  border-radius:5px;
-  font-size:12px;
+  width: 100%;
+  max-width:200px;
 }
 
 .section {
@@ -45,15 +39,29 @@ button {
   margin:20px auto;
   border-radius:16px;
   max-width:600px;
+  box-sizing: border-box;
 }
 
 input, select, label {
   display:block;
   width:100%;
+  max-width:100%;
   padding:10px;
   margin:6px 0;
   border-radius:8px;
   border:none;
+  background: #334155;
+  color:white;
+  box-sizing: border-box;
+  font-size:16px;
+}
+
+input::placeholder {
+  color: #cbd5e1;
+}
+
+select {
+  color: white;
 }
 
 ul {
@@ -71,6 +79,16 @@ li {
   align-items:center;
 }
 
+li .btn-del {
+  background:#ef4444;
+  color:white;
+  border:none;
+  padding:4px 8px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:14px;
+}
+
 header {
   display:flex;
   justify-content:space-between;
@@ -79,7 +97,7 @@ header {
 }
 
 .result {
-  font-size:18px;
+  font-size:20px;
   font-weight:bold;
   text-align:center;
   margin-top:10px;
