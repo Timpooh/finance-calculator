@@ -23,27 +23,41 @@ function logout() {
 // ---------- SHOW CALCULATION PAGES ----------
 function show(type){
   const app = document.getElementById('app');
+  const addSection = document.querySelector("#btn-add").parentElement; // section เพิ่มรายการ
+  const summarySection = document.querySelector("canvas").parentElement; // section chart
+
+  // ซ่อน/แสดงส่วนที่เกี่ยวข้อง
   if(type === 'expense'){
     app.innerHTML = `
       <h2>คำนวณรายรับ - รายจ่าย</h2>
       <label>รายรับ (บาท)<input id="income" type="number" /></label>
       <label>รายจ่าย (บาท)<input id="expense" type="number" /></label>
-      <button onclick="calcExpense()">คำนวณ</button>
+      <button type="button" onclick="calcExpense()">คำนวณ</button>
       <p class="result" id="res"></p>`;
+    
+    addSection.style.display = "block";
+    summarySection.style.display = "block";
+    loadData();
   } else if(type === 'tax'){
     app.innerHTML = `
       <h2>คำนวณภาษี (ตัวอย่าง)</h2>
       <label>รายได้ทั้งปี (บาท)<input id="salary" type="number" /></label>
-      <button onclick="calcTax()">คำนวณภาษี</button>
+      <button type="button" onclick="calcTax()">คำนวณภาษี</button>
       <p class="result" id="res"></p>`;
+    
+    addSection.style.display = "none";
+    summarySection.style.display = "none";
   } else if(type === 'interest'){
     app.innerHTML = `
       <h2>คำนวณดอกเบี้ย</h2>
       <label>จำนวนเงิน (P)<input id="p" type="number" /></label>
       <label>อัตราดอกเบี้ยต่อปี (%)<input id="r" type="number" /></label>
       <label>ระยะเวลา (ปี)<input id="t" type="number" /></label>
-      <button onclick="calcInterest()">คำนวณ</button>
+      <button type="button" onclick="calcInterest()">คำนวณ</button>
       <p class="result" id="res"></p>`;
+
+    addSection.style.display = "none";
+    summarySection.style.display = "none";
   }
 }
 
@@ -76,9 +90,12 @@ function calcInterest(){
 
 // ---------- LOCALSTORAGE RECORDS ----------
 function addItem(title, amount, type){
+  if(!title || !amount) return alert("กรอกชื่อและจำนวนเงินให้ครบ");
   let records = JSON.parse(localStorage.getItem("records") || "[]");
   records.push({title, amount, type});
   localStorage.setItem("records", JSON.stringify(records));
+  document.getElementById('title').value = "";
+  document.getElementById('amount').value = "";
   loadData();
 }
 
@@ -106,10 +123,11 @@ function loadData(){
   drawChart(income, expense);
 }
 
+// ---------- CHART ----------
 let chart;
 function drawChart(income, expense){
   const ctx = document.getElementById("chart");
-  if(!ctx) return; // ป้องกัน error ถ้า canvas ยังไม่โหลด
+  if(!ctx) return;
 
   if(chart) chart.destroy();
 
@@ -133,7 +151,20 @@ window.onload = () => {
       return;
     }
     document.getElementById("username").textContent = "สวัสดี " + localStorage.getItem("name");
-    loadData();
+  }
+
+  // ปุ่ม navigation
+  document.getElementById("btn-expense").onclick = ()=>show('expense');
+  document.getElementById("btn-tax").onclick = ()=>show('tax');
+  document.getElementById("btn-interest").onclick = ()=>show('interest');
+
+  // ปุ่มเพิ่มรายการ
+  document.getElementById("btn-add").onclick = ()=>{
+    addItem(
+      document.getElementById('title').value,
+      Number(document.getElementById('amount').value),
+      document.getElementById('type').value
+    );
   }
 
   // แสดงหน้า default
