@@ -1,8 +1,0 @@
-body { font-family: "Noto Sans Thai", sans-serif; background:#f4f6f8; color:#222; padding:20px; }
-header { text-align:center; margin-bottom:14px; }
-nav { text-align:center; margin-bottom:18px; }
-button { padding:10px 14px; margin:6px; border-radius:8px; border:0; cursor:pointer; background:#2b6cb0; color:white; }
-.section { background:white; padding:18px; border-radius:10px; max-width:760px; margin:10px auto; box-shadow:0 2px 6px rgba(0,0,0,0.06); }
-label { display:block; margin-top:8px; }
-input[type="number"], input[type="text"]{ width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #ccc; box-sizing:border-box;}
-.result { margin-top:12px; font-weight:700; }
