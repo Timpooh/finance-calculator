@@ -1,3 +1,4 @@
+/* ---------- BODY ---------- */
 body {
   font-family: Arial, sans-serif;
   background: #0f172a;
@@ -6,70 +7,133 @@ body {
   padding: 20px;
 }
 
+/* ---------- CENTER LOGIN ---------- */
 .center {
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  height:100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
 }
 
+/* ---------- LOGIN CARD ---------- */
 .login-card {
-  background:#1e293b;
-  padding:30px;
-  border-radius:16px;
-  width:320px;
-  text-align:center;
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 16px;
+  width: 320px;
+  text-align: center;
 }
 
+.login-card h1 {
+  margin-bottom: 10px;
+}
+
+.login-card p {
+  margin-bottom: 20px;
+}
+
+/* ---------- BUTTONS ---------- */
 button {
-  background:#3b82f6;
-  border:none;
-  color:white;
-  padding:10px 18px;
-  margin:10px 0;
-  border-radius:10px;
-  cursor:pointer;
+  background: #3b82f6;
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  margin: 10px 0;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
 }
 
+button:hover {
+  background: #2563eb;
+}
+
+/* ---------- SECTIONS ---------- */
 .section {
-  background:#1e293b;
-  padding:20px;
-  margin:20px auto;
-  border-radius:16px;
-  max-width:600px;
+  background: #1e293b;
+  padding: 20px;
+  margin: 20px auto;
+  border-radius: 16px;
+  max-width: 600px;
 }
 
+/* ---------- INPUT & SELECT ---------- */
 input, select, label {
-  display:block;
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  border-radius:8px;
-  border:none;
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 8px;
+  border: none;
+  box-sizing: border-box;
 }
 
+/* ---------- NAV BUTTONS ---------- */
+nav button {
+  width: 32%;
+  margin: 5px 1%;
+}
+
+/* ---------- LIST ---------- */
 ul {
-  list-style:none;
-  padding:0;
+  list-style: none;
+  padding: 0;
 }
 
 li {
-  background:#334155;
-  padding:10px;
-  border-radius:8px;
-  margin:6px 0;
+  background: #334155;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 6px 0;
 }
 
+/* ---------- HEADER ---------- */
 header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
+/* ---------- RESULT TEXT ---------- */
 .result {
-  font-size:20px;
-  font-weight:bold;
-  text-align:center;
-  margin-top:10px;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* ---------- CALCULATION + ADD ITEM ---------- */
+.calc-add label {
+  margin-bottom: 8px;
+}
+
+.calc-add input, .calc-add select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: none;
+}
+
+/* ---------- CANVAS ---------- */
+canvas {
+  max-width: 100%;
+  margin-top: 20px;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media screen and (max-width: 640px) {
+  .section {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  nav button {
+    width: 100%;
+    margin: 5px 0;
+  }
 }

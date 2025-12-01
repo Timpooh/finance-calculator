@@ -1,6 +1,7 @@
 // ---------- LOGIN ----------
 function login() {
   const provider = new firebase.auth.GoogleAuthProvider();
+
   auth.signInWithPopup(provider)
     .then((result) => {
       localStorage.setItem("uid", result.user.uid);
@@ -19,59 +20,94 @@ function logout() {
   window.location.href = "index.html";
 }
 
+// ---------- DASHBOARD INIT ----------
+window.onload = () => {
+  if(document.getElementById("username")){
+    if(!localStorage.getItem("uid")){
+      window.location.href = "index.html";
+      return;
+    }
+    document.getElementById("username").textContent = "สวัสดี " + localStorage.getItem("name");
+
+    // แสดงหน้า default
+    show('expense');
+  }
+
+  // ปุ่ม logout
+  const btnLogout = document.getElementById("btn-logout");
+  if(btnLogout) btnLogout.addEventListener("click", logout);
+
+  // ปุ่มเปลี่ยนหน้า
+  const btnExpense = document.getElementById("btn-expense");
+  if(btnExpense) btnExpense.addEventListener("click", ()=>show('expense'));
+
+  const btnTax = document.getElementById("btn-tax");
+  if(btnTax) btnTax.addEventListener("click", ()=>show('tax'));
+
+  const btnInterest = document.getElementById("btn-interest");
+  if(btnInterest) btnInterest.addEventListener("click", ()=>show('interest'));
+}
+
 // ---------- SHOW CALCULATION PAGES ----------
 function show(type){
   const app = document.getElementById('app');
-  const addSection = document.getElementById('section-add');
-  const listSection = document.getElementById('section-list');
-  const chartSection = document.getElementById('section-chart');
 
   if(type === 'expense'){
     app.innerHTML = `
-      <h2>คำนวณรายรับ - รายจ่าย</h2>
-      <label>รายรับ (บาท)<input id="income" type="number" /></label>
-      <label>รายจ่าย (บาท)<input id="expense" type="number" /></label>
-      <button type="button" onclick="calcExpense()">คำนวณ</button>
-      <p class="result" id="res"></p>`;
+      <h2>รายรับ-รายจ่าย</h2>
 
-    addSection.style.display = "block";
-    listSection.style.display = "block";
-    chartSection.style.display = "block";
+      <div class="calc-add">
+        <label>ชื่อรายการ <input id="title" type="text" placeholder="ชื่อรายการ"></label>
+        <label>จำนวนเงิน <input id="amount" type="number" placeholder="จำนวนเงิน"></label>
+        <label>ประเภท
+          <select id="type">
+            <option value="income">รายรับ</option>
+            <option value="expense">รายจ่าย</option>
+          </select>
+        </label>
+        <button id="btn-add" type="button">เพิ่มรายการ</button>
+      </div>
+
+      <ul id="list"></ul>
+      <p class="result" id="total">คงเหลือสุทธิ: 0 บาท</p>
+
+      <canvas id="chart" style="margin-top:20px;"></canvas>
+    `;
+
     loadData();
-  } 
+
+    // เพิ่ม event listener สำหรับปุ่มเพิ่ม
+    document.getElementById("btn-add").addEventListener("click", ()=>{
+      const title = document.getElementById('title').value;
+      const amount = Number(document.getElementById('amount').value);
+      const type = document.getElementById('type').value;
+      if(!title || !amount) return alert("กรอกข้อมูลให้ครบ");
+
+      addItem(title, amount, type);
+
+      document.getElementById('title').value = '';
+      document.getElementById('amount').value = '';
+    });
+  }
   else if(type === 'tax'){
     app.innerHTML = `
-      <h2>คำนวณภาษี (ตัวอย่าง)</h2>
-      <label>รายได้ทั้งปี (บาท)<input id="salary" type="number" /></label>
-      <button type="button" onclick="calcTax()">คำนวณภาษี</button>
+      <h2>คำนวณภาษี</h2>
+      <label>รายได้ทั้งปี (บาท)<input id="salary" type="number" placeholder="รายได้ทั้งหมด" /></label>
+      <button type="button" onclick="calcTax()">คำนวณ</button>
       <p class="result" id="res"></p>`;
-
-    addSection.style.display = "none";
-    listSection.style.display = "none";
-    chartSection.style.display = "none";
-  } 
+  }
   else if(type === 'interest'){
     app.innerHTML = `
       <h2>คำนวณดอกเบี้ย</h2>
-      <label>จำนวนเงิน (P)<input id="p" type="number" /></label>
-      <label>อัตราดอกเบี้ยต่อปี (%)<input id="r" type="number" /></label>
-      <label>ระยะเวลา (ปี)<input id="t" type="number" /></label>
+      <label>จำนวนเงิน (P)<input id="p" type="number" placeholder="จำนวนเงิน" /></label>
+      <label>อัตราดอกเบี้ยต่อปี (%)<input id="r" type="number" placeholder="อัตราดอกเบี้ย" /></label>
+      <label>ระยะเวลา (ปี)<input id="t" type="number" placeholder="ระยะเวลา" /></label>
       <button type="button" onclick="calcInterest()">คำนวณ</button>
       <p class="result" id="res"></p>`;
-
-    addSection.style.display = "none";
-    listSection.style.display = "none";
-    chartSection.style.display = "none";
   }
 }
 
 // ---------- CALCULATION FUNCTIONS ----------
-function calcExpense(){
-  const income = Number(document.getElementById('income').value||0);
-  const expense = Number(document.getElementById('expense').value||0);
-  document.getElementById('res').textContent = `คงเหลือ: ${(income - expense).toFixed(2)} บาท`;
-}
-
 function calcTax(){
   const s = Number(document.getElementById('salary').value||0);
   let tax = 0;
@@ -94,7 +130,6 @@ function calcInterest(){
 
 // ---------- LOCALSTORAGE RECORDS ----------
 function addItem(title, amount, type){
-  if(!title || !amount) return alert("กรอกข้อมูลไม่ครบ");
   let records = JSON.parse(localStorage.getItem("records") || "[]");
   records.push({title, amount, type});
   localStorage.setItem("records", JSON.stringify(records));
@@ -125,13 +160,13 @@ function loadData(){
   drawChart(income, expense);
 }
 
-// ---------- DRAW CHART ----------
 let chart;
 function drawChart(income, expense){
   const ctx = document.getElementById("chart");
   if(!ctx) return;
 
   if(chart) chart.destroy();
+
   chart = new Chart(ctx,{
     type:'doughnut',
     data:{
@@ -143,36 +178,3 @@ function drawChart(income, expense){
     }
   });
 }
-
-// ---------- INIT DASHBOARD ----------
-window.addEventListener("DOMContentLoaded", () => {
-  if(document.getElementById("username")){
-    if(!localStorage.getItem("uid")){
-      window.location.href = "index.html";
-      return;
-    }
-    document.getElementById("username").textContent = "สวัสดี " + localStorage.getItem("name");
-  }
-
-  // Navigation buttons
-  document.getElementById("btn-expense").addEventListener("click", ()=>show('expense'));
-  document.getElementById("btn-tax").addEventListener("click", ()=>show('tax'));
-  document.getElementById("btn-interest").addEventListener("click", ()=>show('interest'));
-
-  // Logout button
-  document.getElementById("btn-logout").addEventListener("click", logout);
-
-  // Add item button
-  document.getElementById("btn-add").addEventListener("click", ()=>{
-    addItem(
-      document.getElementById('title').value,
-      Number(document.getElementById('amount').value),
-      document.getElementById('type').value
-    );
-    document.getElementById('title').value = '';
-    document.getElementById('amount').value = '';
-  });
-
-  // Show default page
-  show('expense');
-});
