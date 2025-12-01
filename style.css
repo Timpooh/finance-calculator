@@ -6,19 +6,11 @@ body {
   padding: 20px;
 }
 
-.center {
+header {
   display:flex;
+  justify-content:space-between;
   align-items:center;
-  justify-content:center;
-  height:100vh;
-}
-
-.login-card {
-  background:#1e293b;
-  padding:30px;
-  border-radius:16px;
-  width:320px;
-  text-align:center;
+  padding:10px 0;
 }
 
 button {
@@ -39,29 +31,20 @@ button {
   margin:20px auto;
   border-radius:16px;
   max-width:600px;
-  box-sizing: border-box;
 }
 
-input, select, label {
+input, select {
   display:block;
   width:100%;
   max-width:100%;
-  padding:10px;
-  margin:6px 0;
-  border-radius:8px;
+  padding:12px;
+  margin:8px 0;
+  border-radius:10px;
   border:none;
   background: #334155;
   color:white;
-  box-sizing: border-box;
+  box-sizing:border-box;
   font-size:16px;
-}
-
-input::placeholder {
-  color: #cbd5e1;
-}
-
-select {
-  color: white;
 }
 
 ul {
@@ -71,9 +54,9 @@ ul {
 
 li {
   background:#334155;
-  padding:10px;
-  border-radius:8px;
-  margin:6px 0;
+  padding:12px;
+  border-radius:10px;
+  margin:8px 0;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -83,22 +66,15 @@ li .btn-del {
   background:#ef4444;
   color:white;
   border:none;
-  padding:4px 8px;
-  border-radius:6px;
+  padding:5px 10px;
+  border-radius:8px;
   cursor:pointer;
   font-size:14px;
-}
-
-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
 }
 
 .result {
   font-size:20px;
   font-weight:bold;
   text-align:center;
-  margin-top:10px;
+  margin-top:15px;
 }
