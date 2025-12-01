@@ -12,5 +12,5 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// ใช้ global variables
+// ใช้ global variable สำหรับ login
 const auth = firebase.auth();

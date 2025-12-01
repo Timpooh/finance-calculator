@@ -39,7 +39,8 @@ button {
   max-width:600px;
 }
 
-input, select {
+input, select, label {
+  display:block;
   width:100%;
   padding:10px;
   margin:6px 0;
