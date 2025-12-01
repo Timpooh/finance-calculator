@@ -7,55 +7,54 @@
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- Firebase + Chart -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <script src="firebase.js"></script>
+  <script src="firebase.js" defer></script>
+  <script src="script.js" defer></script>
 </head>
+
 <body>
 
 <header>
-  <h2 id="username"></h2>
-  <button onclick="logout()">Logout</button>
+  <h2 id="username">Loading...</h2>
+  <button id="btn-logout">Logout</button>
 </header>
 
-<!-- ปุ่มเปลี่ยนหน้า -->
 <nav class="section">
-  <button id="btn-expense">รายรับ - รายจ่าย</button>
+  <button id="btn-expense">รายรับ-รายจ่าย</button>
   <button id="btn-tax">ภาษี</button>
   <button id="btn-interest">ดอกเบี้ย</button>
 </nav>
 
-<!-- เนื้อหาแต่ละหน้า -->
-<div id="app" class="section"></div>
+<main id="app" class="section">
+  <h2>ระบบจัดการรายรับ - รายจ่าย</h2>
+</main>
 
-<!-- เพิ่มรายการ -->
 <section class="section" id="section-records">
-  <h2>เพิ่มรายการ</h2>
+  <h3>เพิ่มรายการ</h3>
+
   <input type="text" id="title" placeholder="ชื่อรายการ">
   <input type="number" id="amount" placeholder="จำนวนเงิน">
+
   <select id="type">
     <option value="income">รายรับ</option>
     <option value="expense">รายจ่าย</option>
   </select>
+
   <button id="btn-add">เพิ่มรายการ</button>
 </section>
 
-<!-- รายการทั้งหมด -->
 <section class="section" id="section-list">
-  <h2>รายการทั้งหมด</h2>
+  <h3>รายการทั้งหมด</h3>
   <ul id="list"></ul>
   <p class="result" id="total">คงเหลือสุทธิ: 0 บาท</p>
 </section>
 
-<!-- กราฟ -->
 <section class="section" id="section-chart">
-  <h2>ภาพรวม</h2>
+  <h3>สรุปรายรับ - รายจ่าย</h3>
   <canvas id="chart"></canvas>
 </section>
 
-<script src="script.js"></script>
 </body>
 </html>

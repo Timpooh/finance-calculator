@@ -1,28 +1,23 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: white;
-  margin: 0;
-  padding: 20px;
-}
-
-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px 0;
-}
-
-button {
-  background:#3b82f6;
-  border:none;
+  font-family: Arial;
+  background:#0f172a;
   color:white;
-  padding:10px 18px;
-  margin:6px 0;
-  border-radius:10px;
-  cursor:pointer;
-  width: 100%;
-  max-width:200px;
+  margin:0;
+}
+
+.center {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.login-card{
+  background:#1e293b;
+  padding:30px;
+  width:320px;
+  text-align:center;
+  border-radius:20px;
 }
 
 .section {
@@ -33,48 +28,35 @@ button {
   max-width:600px;
 }
 
-input, select {
-  display:block;
+input,select,button{
   width:100%;
-  max-width:100%;
   padding:12px;
   margin:8px 0;
   border-radius:10px;
   border:none;
-  background: #334155;
+}
+
+button{
+  background:#3b82f6;
   color:white;
-  box-sizing:border-box;
-  font-size:16px;
+  cursor:pointer;
 }
 
-ul {
-  list-style:none;
-  padding:0;
-}
+ul{padding:0;list-style:none}
 
-li {
-  background:#334155;
-  padding:12px;
-  border-radius:10px;
-  margin:8px 0;
+li{
   display:flex;
   justify-content:space-between;
-  align-items:center;
+  background:#334155;
+  padding:10px;
+  margin:6px 0;
+  border-radius:10px;
 }
 
-li .btn-del {
-  background:#ef4444;
-  color:white;
-  border:none;
-  padding:5px 10px;
-  border-radius:8px;
-  cursor:pointer;
-  font-size:14px;
-}
+.btn-del{background:#ef4444}
 
-.result {
-  font-size:20px;
-  font-weight:bold;
+.result{
   text-align:center;
-  margin-top:15px;
+  font-size:18px;
+  margin-top:10px;
 }
