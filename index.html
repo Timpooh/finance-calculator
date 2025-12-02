@@ -176,6 +176,16 @@
     .hidden {
       display: none;
     }
+
+    .info-box {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -192,8 +202,8 @@
     <!-- Login Form -->
     <div id="login-form">
       <div class="form-group">
-        <label>อีเมล</label>
-        <input type="email" id="login-email" placeholder="your@email.com">
+        <label>ชื่อผู้ใช้</label>
+        <input type="text" id="login-username" placeholder="username">
       </div>
 
       <div class="form-group">
@@ -224,14 +234,13 @@
 
     <!-- Register Form -->
     <div id="register-form" class="hidden">
-      <div class="form-group">
-        <label>ชื่อ-นามสกุล</label>
-        <input type="text" id="register-name" placeholder="ชื่อของคุณ">
+      <div class="info-box">
+        💡 ระบบจะสร้างอีเมลให้อัตโนมัติ คุณแค่ตั้งชื่อผู้ใช้และรหัสผ่าน
       </div>
 
       <div class="form-group">
-        <label>อีเมล</label>
-        <input type="email" id="register-email" placeholder="your@email.com">
+        <label>ชื่อผู้ใช้ (Username)</label>
+        <input type="text" id="register-username" placeholder="ตัวอักษรภาษาอังกฤษและตัวเลขเท่านั้น">
       </div>
 
       <div class="form-group">
@@ -318,6 +327,20 @@
       successMessage.style.display = 'none';
     }
 
+    // สร้างอีเมลจาก username
+    function createEmailFromUsername(username) {
+      // ลบช่องว่างและอักขระพิเศษ แล้วเปลี่ยนเป็นตัวพิมพ์เล็ก
+      const cleanUsername = username.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return `${cleanUsername}@financeapp.local`;
+    }
+
+    // ตรวจสอบ username ว่าถูกต้องไหม
+    function isValidUsername(username) {
+      // อนุญาตเฉพาะตัวอักษร a-z, A-Z, 0-9 และ underscore
+      const regex = /^[a-zA-Z0-9_]+$/;
+      return regex.test(username) && username.length >= 3;
+    }
+
     // Check if user is already logged in
     auth.onAuthStateChanged(user => {
       if (user) {
@@ -325,32 +348,32 @@
       }
     });
 
-    // Login with Email/Password
+    // Login with Username/Password
     document.getElementById('btn-login').addEventListener('click', async () => {
-      const email = document.getElementById('login-email').value.trim();
+      const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value;
 
-      if (!email || !password) {
-        showError('กรุณากรอกอีเมลและรหัสผ่าน');
+      if (!username || !password) {
+        showError('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
         return;
       }
+
+      // แปลง username เป็น email
+      const email = createEmailFromUsername(username);
 
       try {
         await auth.signInWithEmailAndPassword(email, password);
         // Will redirect automatically via onAuthStateChanged
       } catch (error) {
         switch (error.code) {
-          case 'auth/invalid-email':
-            showError('รูปแบบอีเมลไม่ถูกต้อง');
-            break;
           case 'auth/user-not-found':
-            showError('ไม่พบผู้ใช้งานนี้ในระบบ');
+            showError('ไม่พบชื่อผู้ใช้นี้ในระบบ');
             break;
           case 'auth/wrong-password':
             showError('รหัสผ่านไม่ถูกต้อง');
             break;
           case 'auth/invalid-credential':
-            showError('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+            showError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
             break;
           default:
             showError('เกิดข้อผิดพลาด: ' + error.message);
@@ -358,20 +381,19 @@
       }
     });
 
-    // Register with Email/Password
+    // Register with Username/Password
     document.getElementById('btn-register').addEventListener('click', async () => {
-      const name = document.getElementById('register-name').value.trim();
-      const email = document.getElementById('register-email').value.trim();
+      const username = document.getElementById('register-username').value.trim();
       const password = document.getElementById('register-password').value;
       const confirmPassword = document.getElementById('register-confirm-password').value;
 
-      if (!name) {
-        showError('กรุณากรอกชื่อ-นามสกุล');
+      if (!username) {
+        showError('กรุณากรอกชื่อผู้ใช้');
         return;
       }
 
-      if (!email) {
-        showError('กรุณากรอกอีเมล');
+      if (!isValidUsername(username)) {
+        showError('ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร และใช้เฉพาะ a-z, 0-9, _ เท่านั้น');
         return;
       }
 
@@ -390,12 +412,15 @@
         return;
       }
 
+      // สร้างอีเมลอัตโนมัติจาก username
+      const email = createEmailFromUsername(username);
+
       try {
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         
-        // Update profile with display name
+        // Update profile with display name เป็น username
         await userCredential.user.updateProfile({
-          displayName: name
+          displayName: username
         });
 
         showSuccess('สมัครสมาชิกสำเร็จ! กำลังเข้าสู่ระบบ...');
@@ -404,10 +429,7 @@
       } catch (error) {
         switch (error.code) {
           case 'auth/email-already-in-use':
-            showError('อีเมลนี้ถูกใช้งานแล้ว');
-            break;
-          case 'auth/invalid-email':
-            showError('รูปแบบอีเมลไม่ถูกต้อง');
+            showError('ชื่อผู้ใช้นี้ถูกใช้งานแล้ว กรุณาเลือกชื่ออื่น');
             break;
           case 'auth/weak-password':
             showError('รหัสผ่านไม่ปลอดภัยเพียงพอ');
