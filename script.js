@@ -251,28 +251,41 @@ window.addEventListener("DOMContentLoaded", () => {
       app.innerHTML = `
         <h2>คำนวณดอกเบี้ย</h2>
 
-        <label>จำนวนเงินต้น (P)</label>
-        <input id="p" type="number" placeholder="เงินต้น">
+        <label>จำนวนเงินต้น (บาท)</label>
+        <input id="p" type="number" placeholder="เช่น 100000" step="0.01">
         
         <label>อัตราดอกเบี้ยต่อปี (%)</label>
-        <input id="r" type="number" placeholder="ดอกเบี้ย (%)">
+        <input id="r" type="number" placeholder="เช่น 5.5" step="0.01">
+
+        <div style="background: #334155; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 13px;">
+          <p style="margin: 0 0 5px 0; font-weight: bold; color: #fbbf24;">💡 ระยะเวลา</p>
+          <p style="margin: 3px 0;">กรอกเฉพาะส่วนที่ต้องการ (ไม่กรอก = 0)</p>
+          <p style="margin: 3px 0;">• ถ้าอยากคำนวณ <strong>3 ปี</strong> → กรอกแค่ "ปี" เป็น 3</p>
+          <p style="margin: 3px 0;">• ถ้าอยากคำนวณ <strong>2 ปี 6 เดือน</strong> → กรอก "ปี" = 2, "เดือน" = 6</p>
+        </div>
 
         <div style="display:flex;gap:10px">
           <div style="flex:1">
             <label>ระยะเวลา (ปี)</label>
-            <input id="y" type="number" placeholder="ปี">
+            <input id="y" type="number" placeholder="0" min="0">
           </div>
           <div style="flex:1">
             <label>ระยะเวลา (เดือน)</label>
-            <input id="m" type="number" placeholder="เดือน">
+            <input id="m" type="number" placeholder="0" min="0" max="11">
           </div>
         </div>
 
         <label>ประเภทดอกเบี้ย</label>
         <select id="mode">
-          <option value="simple">ดอกเบี้ยธรรมดา</option>
-          <option value="compound">ดอกเบี้ยทบต้น</option>
+          <option value="simple">ดอกเบี้ยธรรมดา (Simple Interest)</option>
+          <option value="compound">ดอกเบี้ยทบต้นรายปี (Compound Interest - Yearly)</option>
         </select>
+
+        <div style="background: #334155; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 12px;">
+          <p style="margin: 0 0 5px 0; font-weight: bold;">ℹ️ ความแตกต่าง:</p>
+          <p style="margin: 3px 0;"><strong>ดอกเบี้ยธรรมดา:</strong> คิดดอกเบี้ยจากเงินต้นเท่านั้น</p>
+          <p style="margin: 3px 0;"><strong>ดอกเบี้ยทบต้น:</strong> ดอกเบี้ยแต่ละปีจะกลายเป็นเงินต้นในปีถัดไป</p>
+        </div>
 
         <button id="calcInterest">คำนวณ</button>
         <div id="interestResult" class="result"></div>
@@ -298,6 +311,11 @@ window.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
+        if (y === 0 && m === 0) {
+          alert("กรุณากรอกระยะเวลาอย่างน้อย 1 ปี หรือ 1 เดือน");
+          return;
+        }
+
         const t = y + (m / 12);
         const mode = document.getElementById("mode").value;
 
@@ -314,14 +332,28 @@ window.addEventListener("DOMContentLoaded", () => {
           interest = result - P;
         }
 
+        // แสดงระยะเวลาให้อ่านง่าย
+        let timeText = "";
+        if (y > 0 && m > 0) {
+          timeText = `${y} ปี ${m} เดือน`;
+        } else if (y > 0) {
+          timeText = `${y} ปี`;
+        } else {
+          timeText = `${m} เดือน`;
+        }
+
         document.getElementById("interestResult").innerHTML = `
-          <p><strong>สรุปการคำนวณดอกเบี้ย</strong></p>
-          <p>เงินต้น: ${P.toLocaleString()} บาท</p>
-          <p>อัตราดอกเบี้ย: ${(r * 100).toFixed(2)}% ต่อปี</p>
-          <p>ระยะเวลา: ${y} ปี ${m} เดือน (${t.toFixed(2)} ปี)</p>
-          <p>ประเภท: ${mode === "simple" ? "ดอกเบี้ยธรรมดา" : "ดอกเบี้ยทบต้น"}</p>
-          <p style="color: #22c55e;"><strong>ดอกเบี้ยที่ได้รับ: ${interest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
-          <p style="color: #2563eb; font-size: 18px;"><strong>รวมเงินทั้งหมด: ${result.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+          <div style="background: #1e293b; padding: 15px; border-radius: 8px; margin-top: 15px;">
+            <p style="margin: 0 0 10px 0; font-size: 16px;"><strong>📊 สรุปการคำนวณดอกเบี้ย</strong></p>
+            <hr style="border: none; border-top: 1px solid #334155; margin: 10px 0;">
+            <p style="margin: 5px 0;">เงินต้น: <strong>${P.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
+            <p style="margin: 5px 0;">อัตราดอกเบี้ย: <strong>${(r * 100).toFixed(2)}% ต่อปี</strong></p>
+            <p style="margin: 5px 0;">ระยะเวลา: <strong>${timeText}</strong> (${t.toFixed(4)} ปี)</p>
+            <p style="margin: 5px 0;">ประเภท: <strong>${mode === "simple" ? "ดอกเบี้ยธรรมดา" : "ดอกเบี้ยทบต้นรายปี"}</strong></p>
+            <hr style="border: none; border-top: 1px solid #334155; margin: 10px 0;">
+            <p style="margin: 10px 0 5px 0; color: #22c55e; font-size: 18px;"><strong>💵 ดอกเบี้ยที่ได้รับ: ${interest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+            <p style="margin: 5px 0; color: #2563eb; font-size: 20px;"><strong>💰 รวมเงินทั้งหมด: ${result.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+          </div>
         `;
       }
     };
