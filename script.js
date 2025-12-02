@@ -150,9 +150,44 @@ window.addEventListener("DOMContentLoaded", () => {
 
   /* ----------- NAVIGATION ----------- */
 
+  // ฟังก์ชันแสดงหน้า Dashboard หลัก
+  function showDashboard() {
+    app.innerHTML = `
+      <h2 style="text-align: center; margin-bottom: 30px;">🏠 Dashboard</h2>
+      <div class="dashboard-grid">
+        <div class="dashboard-card" id="card-expense">
+          <div class="icon">💰</div>
+          <h3>รายรับ - รายจ่าย</h3>
+          <p>จัดการและบันทึกรายรับรายจ่ายของคุณ</p>
+        </div>
+        
+        <div class="dashboard-card" id="card-tax">
+          <div class="icon">📊</div>
+          <h3>คำนวณภาษี</h3>
+          <p>คำนวณภาษีเงินได้บุคคลธรรมดา</p>
+        </div>
+        
+        <div class="dashboard-card" id="card-interest">
+          <div class="icon">📈</div>
+          <h3>คำนวณดอกเบี้ย</h3>
+          <p>คำนวณดอกเบี้ยธรรมดาและทบต้น</p>
+        </div>
+      </div>
+    `;
+
+    sectionRecords.style.display = "none";
+    sectionList.style.display = "none";
+    sectionChart.style.display = "none";
+
+    // เพิ่ม event listeners สำหรับ cards
+    document.getElementById("card-expense").onclick = () => btnExpense.click();
+    document.getElementById("card-tax").onclick = () => btnTax.click();
+    document.getElementById("card-interest").onclick = () => btnInterest.click();
+  }
+
   if (btnExpense) {
     btnExpense.onclick = () => {
-      app.innerHTML = "<h2>ระบบจัดการรายรับ - รายจ่าย</h2>";
+      app.innerHTML = "<h2>💰 ระบบจัดการรายรับ - รายจ่าย</h2>";
 
       sectionRecords.style.display = "block";
       sectionList.style.display = "block";
@@ -167,7 +202,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (btnTax) {
     btnTax.onclick = () => {
       app.innerHTML = `
-        <h2>คำนวณภาษี</h2>
+        <h2>📊 คำนวณภาษี</h2>
 
         <label>รายได้ต่อปี (บาท)</label>
         <input id="income" type="number" placeholder="เช่น 600000">
@@ -175,16 +210,16 @@ window.addEventListener("DOMContentLoaded", () => {
         <label>ค่าลดหย่อนรวมทั้งหมด (บาท)</label>
         <input id="deduction" type="number" placeholder="รวมค่าลดหย่อนทุกประเภท">
         
-        <div style="background: #334155; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 13px;">
-          <p style="margin: 0 0 8px 0; font-weight: bold; color: #fbbf24;">💡 ตัวอย่างค่าลดหย่อน:</p>
-          <p style="margin: 3px 0;">• ตัวเอง 60,000 บาท</p>
-          <p style="margin: 3px 0;">• คู่สมรส 60,000 บาท</p>
-          <p style="margin: 3px 0;">• บิดา-มารดา 30,000 บาท/คน</p>
-          <p style="margin: 3px 0;">• บุตร 30,000 บาท/คน</p>
-          <p style="margin: 3px 0;">• ประกันชีวิต สูงสุด 100,000 บาท</p>
-          <p style="margin: 3px 0;">• กองทุนสำรองเลี้ยงชีพ สูงสุด 500,000 บาท</p>
-          <p style="margin: 3px 0;">• ประกันสังคม</p>
-          <p style="margin: 3px 0;">• ดอกเบี้ยบ้าน สูงสุด 100,000 บาท</p>
+        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.2);">
+          <p style="margin: 0 0 10px 0; font-weight: bold;">💡 ตัวอย่างค่าลดหย่อน:</p>
+          <p style="margin: 4px 0;">• ตัวเอง 60,000 บาท</p>
+          <p style="margin: 4px 0;">• คู่สมรส 60,000 บาท</p>
+          <p style="margin: 4px 0;">• บิดา-มารดา 30,000 บาท/คน</p>
+          <p style="margin: 4px 0;">• บุตร 30,000 บาท/คน</p>
+          <p style="margin: 4px 0;">• ประกันชีวิต สูงสุด 100,000 บาท</p>
+          <p style="margin: 4px 0;">• กองทุนสำรองเลี้ยงชีพ สูงสุด 500,000 บาท</p>
+          <p style="margin: 4px 0;">• ประกันสังคม</p>
+          <p style="margin: 4px 0;">• ดอกเบี้ยบ้าน สูงสุด 100,000 บาท</p>
         </div>
 
         <button id="btnTaxCalc">คำนวณภาษี</button>
@@ -231,15 +266,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
         // แสดงผลลัพธ์
         document.getElementById("taxResult").innerHTML = `
-          <div style="background: #1e293b; padding: 15px; border-radius: 8px; margin-top: 15px;">
-            <p style="margin: 0 0 10px 0; font-size: 16px;"><strong>📊 สรุปการคำนวณภาษี</strong></p>
-            <hr style="border: none; border-top: 1px solid #334155; margin: 10px 0;">
-            <p style="margin: 5px 0;">รายได้ต่อปี: <strong>${income.toLocaleString()}</strong> บาท</p>
-            <p style="margin: 5px 0;">ค่าลดหย่อนรวม: <strong>${totalDeduction.toLocaleString()}</strong> บาท</p>
-            <p style="margin: 5px 0;">รายได้สุทธิ: <strong>${netIncome.toLocaleString()}</strong> บาท</p>
-            <hr style="border: none; border-top: 1px solid #334155; margin: 10px 0;">
-            <p style="margin: 10px 0 5px 0; color: #ef4444; font-size: 20px;"><strong>💰 ภาษีที่ต้องจ่าย: ${tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
-            <p style="margin: 5px 0; color: #22c55e; font-size: 16px;">รายได้หลังหักภาษี: ${(income - tax).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
+          <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+            <p style="margin: 0 0 15px 0; font-size: 18px;"><strong>📊 สรุปการคำนวณภาษี</strong></p>
+            <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+            <p style="margin: 8px 0;">รายได้ต่อปี: <strong>${income.toLocaleString()}</strong> บาท</p>
+            <p style="margin: 8px 0;">ค่าลดหย่อนรวม: <strong>${totalDeduction.toLocaleString()}</strong> บาท</p>
+            <p style="margin: 8px 0;">รายได้สุทธิ: <strong>${netIncome.toLocaleString()}</strong> บาท</p>
+            <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+            <p style="margin: 12px 0 8px 0; font-size: 22px;"><strong>💰 ภาษีที่ต้องจ่าย: ${tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+            <p style="margin: 8px 0; font-size: 18px; opacity: 0.9;">รายได้หลังหักภาษี: ${(income - tax).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
           </div>
         `;
       }
@@ -249,7 +284,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (btnInterest) {
     btnInterest.onclick = () => {
       app.innerHTML = `
-        <h2>คำนวณดอกเบี้ย</h2>
+        <h2>📈 คำนวณดอกเบี้ย</h2>
 
         <label>จำนวนเงินต้น (บาท)</label>
         <input id="p" type="number" placeholder="เช่น 100000" step="0.01">
@@ -257,11 +292,11 @@ window.addEventListener("DOMContentLoaded", () => {
         <label>อัตราดอกเบี้ยต่อปี (%)</label>
         <input id="r" type="number" placeholder="เช่น 5.5" step="0.01">
 
-        <div style="background: #334155; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 13px;">
-          <p style="margin: 0 0 5px 0; font-weight: bold; color: #fbbf24;">💡 ระยะเวลา</p>
-          <p style="margin: 3px 0;">กรอกเฉพาะส่วนที่ต้องการ (ไม่กรอก = 0)</p>
-          <p style="margin: 3px 0;">• ถ้าอยากคำนวณ <strong>3 ปี</strong> → กรอกแค่ "ปี" เป็น 3</p>
-          <p style="margin: 3px 0;">• ถ้าอยากคำนวณ <strong>2 ปี 6 เดือน</strong> → กรอก "ปี" = 2, "เดือน" = 6</p>
+        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.2);">
+          <p style="margin: 0 0 8px 0; font-weight: bold;">💡 ระยะเวลา</p>
+          <p style="margin: 4px 0;">กรอกเฉพาะส่วนที่ต้องการ (ไม่กรอก = 0)</p>
+          <p style="margin: 4px 0;">• ถ้าอยากคำนวณ <strong>3 ปี</strong> → กรอกแค่ "ปี" เป็น 3</p>
+          <p style="margin: 4px 0;">• ถ้าอยากคำนวณ <strong>2 ปี 6 เดือน</strong> → กรอก "ปี" = 2, "เดือน" = 6</p>
         </div>
 
         <div style="display:flex;gap:10px">
@@ -281,10 +316,10 @@ window.addEventListener("DOMContentLoaded", () => {
           <option value="compound">ดอกเบี้ยทบต้นรายปี (Compound Interest - Yearly)</option>
         </select>
 
-        <div style="background: #334155; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 12px;">
-          <p style="margin: 0 0 5px 0; font-weight: bold;">ℹ️ ความแตกต่าง:</p>
-          <p style="margin: 3px 0;"><strong>ดอกเบี้ยธรรมดา:</strong> คิดดอกเบี้ยจากเงินต้นเท่านั้น</p>
-          <p style="margin: 3px 0;"><strong>ดอกเบี้ยทบต้น:</strong> ดอกเบี้ยแต่ละปีจะกลายเป็นเงินต้นในปีถัดไป</p>
+        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.2);">
+          <p style="margin: 0 0 8px 0; font-weight: bold;">ℹ️ ความแตกต่าง:</p>
+          <p style="margin: 4px 0;"><strong>ดอกเบี้ยธรรมดา:</strong> คิดดอกเบี้ยจากเงินต้นเท่านั้น</p>
+          <p style="margin: 4px 0;"><strong>ดอกเบี้ยทบต้น:</strong> ดอกเบี้ยแต่ละปีจะกลายเป็นเงินต้นในปีถัดไป</p>
         </div>
 
         <button id="calcInterest">คำนวณ</button>
@@ -343,16 +378,16 @@ window.addEventListener("DOMContentLoaded", () => {
         }
 
         document.getElementById("interestResult").innerHTML = `
-          <div style="background: #1e293b; padding: 15px; border-radius: 8px; margin-top: 15px;">
-            <p style="margin: 0 0 10px 0; font-size: 16px;"><strong>📊 สรุปการคำนวณดอกเบี้ย</strong></p>
-            <hr style="border: none; border-top: 1px solid #334155; margin: 10px 0;">
-            <p style="margin: 5px 0;">เงินต้น: <strong>${P.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
-            <p style="margin: 5px 0;">อัตราดอกเบี้ย: <strong>${(r * 100).toFixed(2)}% ต่อปี</strong></p>
-            <p style="margin: 5px 0;">ระยะเวลา: <strong>${timeText}</strong> (${t.toFixed(4)} ปี)</p>
-            <p style="margin: 5px 0;">ประเภท: <strong>${mode === "simple" ? "ดอกเบี้ยธรรมดา" : "ดอกเบี้ยทบต้นรายปี"}</strong></p>
-            <hr style="border: none; border-top: 1px solid #334155; margin: 10px 0;">
-            <p style="margin: 10px 0 5px 0; color: #22c55e; font-size: 18px;"><strong>💵 ดอกเบี้ยที่ได้รับ: ${interest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
-            <p style="margin: 5px 0; color: #2563eb; font-size: 20px;"><strong>💰 รวมเงินทั้งหมด: ${result.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+          <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+            <p style="margin: 0 0 15px 0; font-size: 18px;"><strong>📊 สรุปการคำนวณดอกเบี้ย</strong></p>
+            <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+            <p style="margin: 8px 0;">เงินต้น: <strong>${P.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
+            <p style="margin: 8px 0;">อัตราดอกเบี้ย: <strong>${(r * 100).toFixed(2)}% ต่อปี</strong></p>
+            <p style="margin: 8px 0;">ระยะเวลา: <strong>${timeText}</strong> (${t.toFixed(4)} ปี)</p>
+            <p style="margin: 8px 0;">ประเภท: <strong>${mode === "simple" ? "ดอกเบี้ยธรรมดา" : "ดอกเบี้ยทบต้นรายปี"}</strong></p>
+            <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+            <p style="margin: 12px 0 8px 0; font-size: 20px;"><strong>💵 ดอกเบี้ยที่ได้รับ: ${interest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+            <p style="margin: 8px 0; font-size: 22px;"><strong>💰 รวมเงินทั้งหมด: ${result.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
           </div>
         `;
       }
@@ -360,6 +395,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   if (listEl) {
+    showDashboard(); // แสดงหน้า Dashboard แทนหน้ารายรับ-รายจ่าย
     renderRecords();
     updateTotal();
     updateChart();
