@@ -169,11 +169,15 @@ window.addEventListener("DOMContentLoaded", () => {
       app.innerHTML = `
         <h2>คำนวณภาษี</h2>
 
-        <input id="income" type="number" placeholder="รายได้ต่อปี">
-        <input id="deduction" type="number" placeholder="ค่าลดหย่อน">
+        <label>รายได้ต่อปี (บาท)</label>
+        <input id="income" type="number" placeholder="เช่น 600000">
+        
+        <label>ค่าลดหย่อนเพิ่มเติม (บาท)</label>
+        <input id="deduction" type="number" placeholder="เช่น ประกัน กองทุน (ไม่ต้องรวม 60,000)">
 
         <button id="btnTaxCalc">คำนวณ</button>
-        <p class="result" id="taxResult">ผลลัพธ์: -</p>
+        
+        <div id="taxResult" class="result"></div>
       `;
 
       sectionRecords.style.display = "none";
@@ -182,19 +186,52 @@ window.addEventListener("DOMContentLoaded", () => {
 
       document.getElementById("btnTaxCalc").onclick = () => {
         const income = +document.getElementById("income").value;
-        const deduction = +document.getElementById("deduction").value || 0;
+        const extraDeduction = +document.getElementById("deduction").value || 0;
 
-        const net = income - deduction;
+        if (!income || income < 0) {
+          alert("กรุณากรอกรายได้ที่ถูกต้อง");
+          return;
+        }
 
+        // ค่าลดหย่อนพื้นฐาน 60,000 บาท + ค่าลดหย่อนเพิ่มเติม
+        const standardDeduction = 60000;
+        const totalDeduction = standardDeduction + extraDeduction;
+        
+        // รายได้สุทธิหลังหักค่าลดหย่อน
+        const netIncome = Math.max(0, income - totalDeduction);
+
+        // คำนวณภาษีตามขั้นบันได
         let tax = 0;
 
-        if (net <= 150000) tax = 0;
-        else if (net <= 300000) tax = (net - 150000) * 0.05;
-        else if (net <= 500000) tax = 7500 + (net - 300000) * 0.1;
-        else tax = 27500 + (net - 500000) * 0.15;
+        if (netIncome <= 150000) {
+          tax = 0;
+        } else if (netIncome <= 300000) {
+          tax = (netIncome - 150000) * 0.05;
+        } else if (netIncome <= 500000) {
+          tax = (150000 * 0.05) + (netIncome - 300000) * 0.10;
+        } else if (netIncome <= 750000) {
+          tax = (150000 * 0.05) + (200000 * 0.10) + (netIncome - 500000) * 0.15;
+        } else if (netIncome <= 1000000) {
+          tax = (150000 * 0.05) + (200000 * 0.10) + (250000 * 0.15) + (netIncome - 750000) * 0.20;
+        } else if (netIncome <= 2000000) {
+          tax = (150000 * 0.05) + (200000 * 0.10) + (250000 * 0.15) + (250000 * 0.20) + (netIncome - 1000000) * 0.25;
+        } else if (netIncome <= 5000000) {
+          tax = (150000 * 0.05) + (200000 * 0.10) + (250000 * 0.15) + (250000 * 0.20) + (1000000 * 0.25) + (netIncome - 2000000) * 0.30;
+        } else {
+          tax = (150000 * 0.05) + (200000 * 0.10) + (250000 * 0.15) + (250000 * 0.20) + (1000000 * 0.25) + (3000000 * 0.30) + (netIncome - 5000000) * 0.35;
+        }
 
-        document.getElementById("taxResult").innerText
-          = "ภาษีที่ต้องจ่าย: " + tax.toFixed(2);
+        // แสดงผลลัพธ์
+        document.getElementById("taxResult").innerHTML = `
+          <p><strong>สรุปการคำนวณภาษี</strong></p>
+          <p>รายได้ต่อปี: ${income.toLocaleString()} บาท</p>
+          <p>ค่าลดหย่อนพื้นฐาน: ${standardDeduction.toLocaleString()} บาท</p>
+          <p>ค่าลดหย่อนเพิ่มเติม: ${extraDeduction.toLocaleString()} บาท</p>
+          <p>รวมค่าลดหย่อน: ${totalDeduction.toLocaleString()} บาท</p>
+          <p><strong>รายได้สุทธิ: ${netIncome.toLocaleString()} บาท</strong></p>
+          <p style="color: #ef4444; font-size: 18px;"><strong>ภาษีที่ต้องจ่าย: ${tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+          <p style="color: #22c55e;">รายได้หลังหักภาษี: ${(income - tax).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
+        `;
       }
     };
   }
@@ -204,21 +241,31 @@ window.addEventListener("DOMContentLoaded", () => {
       app.innerHTML = `
         <h2>คำนวณดอกเบี้ย</h2>
 
+        <label>จำนวนเงินต้น (P)</label>
         <input id="p" type="number" placeholder="เงินต้น">
+        
+        <label>อัตราดอกเบี้ยต่อปี (%)</label>
         <input id="r" type="number" placeholder="ดอกเบี้ย (%)">
 
         <div style="display:flex;gap:10px">
-          <input id="y" type="number" placeholder="ปี">
-          <input id="m" type="number" placeholder="เดือน">
+          <div style="flex:1">
+            <label>ระยะเวลา (ปี)</label>
+            <input id="y" type="number" placeholder="ปี">
+          </div>
+          <div style="flex:1">
+            <label>ระยะเวลา (เดือน)</label>
+            <input id="m" type="number" placeholder="เดือน">
+          </div>
         </div>
 
+        <label>ประเภทดอกเบี้ย</label>
         <select id="mode">
           <option value="simple">ดอกเบี้ยธรรมดา</option>
           <option value="compound">ดอกเบี้ยทบต้น</option>
         </select>
 
         <button id="calcInterest">คำนวณ</button>
-        <p class="result" id="interestResult">ผลลัพธ์: -</p>
+        <div id="interestResult" class="result"></div>
       `;
 
       sectionRecords.style.display = "none";
@@ -231,16 +278,41 @@ window.addEventListener("DOMContentLoaded", () => {
         const y = +document.getElementById("y").value || 0;
         const m = +document.getElementById("m").value || 0;
 
+        if (!P || P <= 0) {
+          alert("กรุณากรอกจำนวนเงินต้นที่ถูกต้อง");
+          return;
+        }
+
+        if (!r || r <= 0) {
+          alert("กรุณากรอกอัตราดอกเบี้ยที่ถูกต้อง");
+          return;
+        }
+
         const t = y + (m / 12);
         const mode = document.getElementById("mode").value;
 
         let result = 0;
+        let interest = 0;
 
-        if (mode === "simple") result = P * (1 + r * t);
-        else result = P * Math.pow(1 + r, t);
+        if (mode === "simple") {
+          // ดอกเบี้ยธรรมดา: A = P(1 + rt)
+          result = P * (1 + r * t);
+          interest = result - P;
+        } else {
+          // ดอกเบี้ยทบต้น: A = P(1 + r)^t
+          result = P * Math.pow(1 + r, t);
+          interest = result - P;
+        }
 
-        document.getElementById("interestResult").innerText =
-          "รวม: " + result.toFixed(2) + " บาท";
+        document.getElementById("interestResult").innerHTML = `
+          <p><strong>สรุปการคำนวณดอกเบี้ย</strong></p>
+          <p>เงินต้น: ${P.toLocaleString()} บาท</p>
+          <p>อัตราดอกเบี้ย: ${(r * 100).toFixed(2)}% ต่อปี</p>
+          <p>ระยะเวลา: ${y} ปี ${m} เดือน (${t.toFixed(2)} ปี)</p>
+          <p>ประเภท: ${mode === "simple" ? "ดอกเบี้ยธรรมดา" : "ดอกเบี้ยทบต้น"}</p>
+          <p style="color: #22c55e;"><strong>ดอกเบี้ยที่ได้รับ: ${interest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+          <p style="color: #2563eb; font-size: 18px;"><strong>รวมเงินทั้งหมด: ${result.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+        `;
       }
     };
   }
