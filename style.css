@@ -1,71 +1,81 @@
-body {
+* {
+  box-sizing: border-box;
   font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
   background: #0f172a;
   color: white;
-  margin: 0;
-  padding: 20px;
   display: flex;
   justify-content: center;
 }
 
+main {
+  width: 100%;
+  max-width: 380px;
+  padding: 15px;
+}
+
+/* Header */
 header {
-  display:flex;
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
-  max-width: 600px;
-  width: 100%;
+  margin-bottom: 10px;
 }
 
-nav.section {
+/* ปุ่มเมนู */
+nav {
   display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
 }
 
- button {
-  background: #3b82f6;
-  border: none;
-  color: white;
-  padding: 10px 18px;
-  margin: 6px 0;
-  border-radius: 10px;
-  cursor: pointer;
-  width: 100%;
-  max-width: 200px;
+nav button {
+  flex: 1;
 }
 
+/* Section ทุกหน้า */
 .section {
   background: #1e293b;
-  padding: 20px;
-  margin: 20px auto;
-  border-radius: 16px;
-  max-width: 600px;
-  width: 100%;
-  box-sizing: border-box;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-}
-
-input, select {
+/* ช่องกรอก */
+input,
+select,
+button {
   width: 100%;
-  max-width: 350px;   /* ✅ จำกัดความกว้าง ไม่ให้ยาวเกิน */
   padding: 10px;
-  margin: 4px 0;
-  border-radius: 10px;
+  margin: 6px 0;
+  border-radius: 8px;
   border: none;
-  background: #334155;
-  color: white;
-  box-sizing: border-box;
-  font-size: 15px;
+  outline: none;
+  font-size: 14px;
 }
 
+/* input ไม่ให้ยาวล้น */
+input,
+select {
+  max-width: 100%;
+}
+
+/* ปุ่ม */
+button {
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+/* รายการ */
 ul {
   list-style: none;
   padding: 0;
@@ -73,24 +83,35 @@ ul {
 
 li {
   background: #334155;
-  padding: 12px;
-  border-radius: 10px;
-  margin: 8px 0;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 8px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-li button {
-  background: #ef4444;
-  padding: 6px 12px;
-  border-radius: 8px;
-  width: auto;
+li.income {
+  border-left: 5px solid #22c55e;
 }
 
+li.expense {
+  border-left: 5px solid #ef4444;
+}
+
+.btn-del {
+  background: #ef4444;
+  padding: 5px 10px;
+}
+
+/* ผลลัพธ์ */
 .result {
-  font-size: 18px;
+  margin-top: 10px;
   font-weight: bold;
-  text-align: center;
-  margin-top: 15px;
+}
+
+/* canvas */
+canvas {
+  max-width: 100%;
 }
