@@ -172,10 +172,22 @@ window.addEventListener("DOMContentLoaded", () => {
         <label>รายได้ต่อปี (บาท)</label>
         <input id="income" type="number" placeholder="เช่น 600000">
         
-        <label>ค่าลดหย่อนเพิ่มเติม (บาท)</label>
-        <input id="deduction" type="number" placeholder="เช่น ประกัน กองทุน (ไม่ต้องรวม 60,000)">
+        <label>ค่าลดหย่อนรวมทั้งหมด (บาท)</label>
+        <input id="deduction" type="number" placeholder="รวมค่าลดหย่อนทุกประเภท">
+        
+        <div style="background: #334155; padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 13px;">
+          <p style="margin: 0 0 8px 0; font-weight: bold; color: #fbbf24;">💡 ตัวอย่างค่าลดหย่อน:</p>
+          <p style="margin: 3px 0;">• ตัวเอง 60,000 บาท</p>
+          <p style="margin: 3px 0;">• คู่สมรส 60,000 บาท</p>
+          <p style="margin: 3px 0;">• บิดา-มารดา 30,000 บาท/คน</p>
+          <p style="margin: 3px 0;">• บุตร 30,000 บาท/คน</p>
+          <p style="margin: 3px 0;">• ประกันชีวิต สูงสุด 100,000 บาท</p>
+          <p style="margin: 3px 0;">• กองทุนสำรองเลี้ยงชีพ สูงสุด 500,000 บาท</p>
+          <p style="margin: 3px 0;">• ประกันสังคม</p>
+          <p style="margin: 3px 0;">• ดอกเบี้ยบ้าน สูงสุด 100,000 บาท</p>
+        </div>
 
-        <button id="btnTaxCalc">คำนวณ</button>
+        <button id="btnTaxCalc">คำนวณภาษี</button>
         
         <div id="taxResult" class="result"></div>
       `;
@@ -186,16 +198,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
       document.getElementById("btnTaxCalc").onclick = () => {
         const income = +document.getElementById("income").value;
-        const extraDeduction = +document.getElementById("deduction").value || 0;
+        const totalDeduction = +document.getElementById("deduction").value || 0;
 
         if (!income || income < 0) {
           alert("กรุณากรอกรายได้ที่ถูกต้อง");
           return;
         }
-
-        // ค่าลดหย่อนพื้นฐาน 60,000 บาท + ค่าลดหย่อนเพิ่มเติม
-        const standardDeduction = 60000;
-        const totalDeduction = standardDeduction + extraDeduction;
         
         // รายได้สุทธิหลังหักค่าลดหย่อน
         const netIncome = Math.max(0, income - totalDeduction);
@@ -223,14 +231,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
         // แสดงผลลัพธ์
         document.getElementById("taxResult").innerHTML = `
-          <p><strong>สรุปการคำนวณภาษี</strong></p>
-          <p>รายได้ต่อปี: ${income.toLocaleString()} บาท</p>
-          <p>ค่าลดหย่อนพื้นฐาน: ${standardDeduction.toLocaleString()} บาท</p>
-          <p>ค่าลดหย่อนเพิ่มเติม: ${extraDeduction.toLocaleString()} บาท</p>
-          <p>รวมค่าลดหย่อน: ${totalDeduction.toLocaleString()} บาท</p>
-          <p><strong>รายได้สุทธิ: ${netIncome.toLocaleString()} บาท</strong></p>
-          <p style="color: #ef4444; font-size: 18px;"><strong>ภาษีที่ต้องจ่าย: ${tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
-          <p style="color: #22c55e;">รายได้หลังหักภาษี: ${(income - tax).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
+          <div style="background: #1e293b; padding: 15px; border-radius: 8px; margin-top: 15px;">
+            <p style="margin: 0 0 10px 0; font-size: 16px;"><strong>📊 สรุปการคำนวณภาษี</strong></p>
+            <hr style="border: none; border-top: 1px solid #334155; margin: 10px 0;">
+            <p style="margin: 5px 0;">รายได้ต่อปี: <strong>${income.toLocaleString()}</strong> บาท</p>
+            <p style="margin: 5px 0;">ค่าลดหย่อนรวม: <strong>${totalDeduction.toLocaleString()}</strong> บาท</p>
+            <p style="margin: 5px 0;">รายได้สุทธิ: <strong>${netIncome.toLocaleString()}</strong> บาท</p>
+            <hr style="border: none; border-top: 1px solid #334155; margin: 10px 0;">
+            <p style="margin: 10px 0 5px 0; color: #ef4444; font-size: 20px;"><strong>💰 ภาษีที่ต้องจ่าย: ${tax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+            <p style="margin: 5px 0; color: #22c55e; font-size: 16px;">รายได้หลังหักภาษี: ${(income - tax).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
+          </div>
         `;
       }
     };
