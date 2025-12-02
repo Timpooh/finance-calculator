@@ -4,20 +4,444 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Finance Calculator - Login</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .auth-container {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      border-radius: 24px;
+      max-width: 420px;
+      width: 90%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 32px;
+      font-weight: 700;
+      text-align: center;
+      background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.9);
+      color: #1e293b;
+      font-size: 15px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      border-color: rgba(255, 255, 255, 0.5);
+      background: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    input::placeholder {
+      color: #64748b;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      margin-top: 10px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 25px 0;
+      opacity: 0.7;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .divider span {
+      padding: 0 15px;
+      font-size: 14px;
+    }
+
+    .google-btn {
+      background: white;
+      color: #667eea;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .google-btn:hover {
+      background: #f8fafc;
+    }
+
+    .switch-form {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .switch-form a {
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px solid white;
+      cursor: pointer;
+    }
+
+    .switch-form a:hover {
+      opacity: 0.8;
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .success-message {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="firebase.js" defer></script>
-  <script src="script.js" defer></script>
 </head>
-<body class="center">
+<body>
 
-  <div class="login-card">
+  <div class="auth-container">
     <h1>Finance Calculator</h1>
-    <p>เข้าสู่ระบบด้วย Google เพื่อเริ่มใช้งาน</p>
-    <button id="loginBtn">Login with Google</button>
+    
+    <div id="error-message" class="error-message"></div>
+    <div id="success-message" class="success-message"></div>
+
+    <!-- Login Form -->
+    <div id="login-form">
+      <div class="form-group">
+        <label>อีเมล</label>
+        <input type="email" id="login-email" placeholder="your@email.com">
+      </div>
+
+      <div class="form-group">
+        <label>รหัสผ่าน</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+
+      <button id="btn-login">เข้าสู่ระบบ</button>
+
+      <div class="divider">
+        <span>หรือ</span>
+      </div>
+
+      <button class="google-btn" id="btn-google-login">
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.709V4.958H.957C.347 6.173 0 7.548 0 9c0 1.452.348 2.827.957 4.042l3.007-2.335z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+        </svg>
+        Login with Google
+      </button>
+
+      <div class="switch-form">
+        ยังไม่มีบัญชี? <a id="show-register">สมัครสมาชิก</a>
+      </div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" class="hidden">
+      <div class="form-group">
+        <label>ชื่อ-นามสกุล</label>
+        <input type="text" id="register-name" placeholder="ชื่อของคุณ">
+      </div>
+
+      <div class="form-group">
+        <label>อีเมล</label>
+        <input type="email" id="register-email" placeholder="your@email.com">
+      </div>
+
+      <div class="form-group">
+        <label>รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label>
+        <input type="password" id="register-password" placeholder="••••••••">
+      </div>
+
+      <div class="form-group">
+        <label>ยืนยันรหัสผ่าน</label>
+        <input type="password" id="register-confirm-password" placeholder="••••••••">
+      </div>
+
+      <button id="btn-register">สมัครสมาชิก</button>
+
+      <div class="divider">
+        <span>หรือ</span>
+      </div>
+
+      <button class="google-btn" id="btn-google-register">
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.709V4.958H.957C.347 6.173 0 7.548 0 9c0 1.452.348 2.827.957 4.042l3.007-2.335z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+        </svg>
+        Sign up with Google
+      </button>
+
+      <div class="switch-form">
+        มีบัญชีอยู่แล้ว? <a id="show-login">เข้าสู่ระบบ</a>
+      </div>
+    </div>
   </div>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAiy8scA-djQ8gjGja4ficc0bzGqy6zgBI",
+      authDomain: "finance-calculator-8f222.firebaseapp.com",
+      projectId: "finance-calculator-8f222",
+      storageBucket: "finance-calculator-8f222.appspot.com",
+      messagingSenderId: "169620318442",
+      appId: "1:169620318442:web:1d720f06127574a235cf93",
+      measurementId: "G-BMH021SFKF"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Elements
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const errorMessage = document.getElementById('error-message');
+    const successMessage = document.getElementById('success-message');
+
+    // Switch between forms
+    document.getElementById('show-register').addEventListener('click', () => {
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+      clearMessages();
+    });
+
+    document.getElementById('show-login').addEventListener('click', () => {
+      registerForm.classList.add('hidden');
+      loginForm.classList.remove('hidden');
+      clearMessages();
+    });
+
+    // Helper functions
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
+    }
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      errorMessage.style.display = 'none';
+    }
+
+    function clearMessages() {
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+    }
+
+    // Check if user is already logged in
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        window.location.href = 'dashboard.html';
+      }
+    });
+
+    // Login with Email/Password
+    document.getElementById('btn-login').addEventListener('click', async () => {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      if (!email || !password) {
+        showError('กรุณากรอกอีเมลและรหัสผ่าน');
+        return;
+      }
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        // Will redirect automatically via onAuthStateChanged
+      } catch (error) {
+        switch (error.code) {
+          case 'auth/invalid-email':
+            showError('รูปแบบอีเมลไม่ถูกต้อง');
+            break;
+          case 'auth/user-not-found':
+            showError('ไม่พบผู้ใช้งานนี้ในระบบ');
+            break;
+          case 'auth/wrong-password':
+            showError('รหัสผ่านไม่ถูกต้อง');
+            break;
+          case 'auth/invalid-credential':
+            showError('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+            break;
+          default:
+            showError('เกิดข้อผิดพลาด: ' + error.message);
+        }
+      }
+    });
+
+    // Register with Email/Password
+    document.getElementById('btn-register').addEventListener('click', async () => {
+      const name = document.getElementById('register-name').value.trim();
+      const email = document.getElementById('register-email').value.trim();
+      const password = document.getElementById('register-password').value;
+      const confirmPassword = document.getElementById('register-confirm-password').value;
+
+      if (!name) {
+        showError('กรุณากรอกชื่อ-นามสกุล');
+        return;
+      }
+
+      if (!email) {
+        showError('กรุณากรอกอีเมล');
+        return;
+      }
+
+      if (!password) {
+        showError('กรุณากรอกรหัสผ่าน');
+        return;
+      }
+
+      if (password.length < 6) {
+        showError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showError('รหัสผ่านไม่ตรงกัน');
+        return;
+      }
+
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        
+        // Update profile with display name
+        await userCredential.user.updateProfile({
+          displayName: name
+        });
+
+        showSuccess('สมัครสมาชิกสำเร็จ! กำลังเข้าสู่ระบบ...');
+        
+        // Will redirect automatically via onAuthStateChanged
+      } catch (error) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            showError('อีเมลนี้ถูกใช้งานแล้ว');
+            break;
+          case 'auth/invalid-email':
+            showError('รูปแบบอีเมลไม่ถูกต้อง');
+            break;
+          case 'auth/weak-password':
+            showError('รหัสผ่านไม่ปลอดภัยเพียงพอ');
+            break;
+          default:
+            showError('เกิดข้อผิดพลาด: ' + error.message);
+        }
+      }
+    });
+
+    // Google Sign-in (Login)
+    document.getElementById('btn-google-login').addEventListener('click', async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      
+      try {
+        await auth.signInWithPopup(provider);
+        // Will redirect automatically via onAuthStateChanged
+      } catch (error) {
+        showError('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: ' + error.message);
+      }
+    });
+
+    // Google Sign-in (Register)
+    document.getElementById('btn-google-register').addEventListener('click', async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      
+      try {
+        await auth.signInWithPopup(provider);
+        // Will redirect automatically via onAuthStateChanged
+      } catch (error) {
+        showError('เกิดข้อผิดพลาดในการสมัครด้วย Google: ' + error.message);
+      }
+    });
+  </script>
 
 </body>
 </html>
