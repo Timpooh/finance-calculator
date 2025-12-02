@@ -25,15 +25,16 @@ header {
   margin-bottom: 10px;
 }
 
-/* ปุ่มเมนู */
+/* ปุ่มเมนู - แก้ไขให้เรียงแนวตั้ง */
 nav {
   display: flex;
+  flex-direction: column; /* เปลี่ยนจาก row เป็น column */
   gap: 8px;
   margin-bottom: 15px;
 }
 
 nav button {
-  flex: 1;
+  width: 100%; /* ให้ปุ่มกว้างเต็มที่ */
 }
 
 /* Section ทุกหน้า */
@@ -114,4 +115,30 @@ li.expense {
 /* canvas */
 canvas {
   max-width: 100%;
+}
+
+/* Login Page */
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.login-card {
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 380px;
+  width: 100%;
+}
+
+.login-card h1 {
+  margin-top: 0;
+}
+
+.login-card p {
+  color: #94a3b8;
+  margin-bottom: 20px;
 }
