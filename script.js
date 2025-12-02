@@ -21,6 +21,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const btnExpense   = document.getElementById("btn-expense");
   const btnTax        = document.getElementById("btn-tax");
   const btnInterest   = document.getElementById("btn-interest");
+  const btnHome       = document.getElementById("btn-home");
   const btnLogout     = document.getElementById("btn-logout");
   const username      = document.getElementById("username");
 
@@ -152,8 +153,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // ฟังก์ชันแสดงหน้า Dashboard หลัก
   function showDashboard() {
+    // ซ่อนปุ่มเมนูด้านบน
+    if (document.querySelector('nav')) {
+      document.querySelector('nav').style.display = "none";
+    }
+
     app.innerHTML = `
-      <h2 style="text-align: center; margin-bottom: 30px;">🏠 Dashboard</h2>
+      <h2 style="text-align: center; margin-bottom: 30px; font-size: 28px;">🏠 Finance Calculator</h2>
       <div class="dashboard-grid">
         <div class="dashboard-card" id="card-expense">
           <div class="icon">💰</div>
@@ -180,9 +186,18 @@ window.addEventListener("DOMContentLoaded", () => {
     sectionChart.style.display = "none";
 
     // เพิ่ม event listeners สำหรับ cards
-    document.getElementById("card-expense").onclick = () => btnExpense.click();
-    document.getElementById("card-tax").onclick = () => btnTax.click();
-    document.getElementById("card-interest").onclick = () => btnInterest.click();
+    document.getElementById("card-expense").onclick = () => {
+      document.querySelector('nav').style.display = "flex";
+      btnExpense.click();
+    };
+    document.getElementById("card-tax").onclick = () => {
+      document.querySelector('nav').style.display = "flex";
+      btnTax.click();
+    };
+    document.getElementById("card-interest").onclick = () => {
+      document.querySelector('nav').style.display = "flex";
+      btnInterest.click();
+    };
   }
 
   if (btnExpense) {
@@ -399,6 +414,11 @@ window.addEventListener("DOMContentLoaded", () => {
     renderRecords();
     updateTotal();
     updateChart();
+  }
+
+  // เพิ่ม event listener สำหรับปุ่ม Home
+  if (btnHome) {
+    btnHome.onclick = () => showDashboard();
   }
 
 });
