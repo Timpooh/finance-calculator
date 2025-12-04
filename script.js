@@ -43,7 +43,6 @@ window.addEventListener("DOMContentLoaded", () => {
   if (username) {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        // แสดงเฉพาะไอคอนผู้ใช้และข้อความทักทาย
         username.innerHTML = `
           <div style="display: flex; align-items: center; gap: 12px;">
             <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
@@ -73,16 +72,37 @@ window.addEventListener("DOMContentLoaded", () => {
   function renderRecords() {
     listEl.innerHTML = "";
 
+    if (records.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; opacity: 0.7;">
+          <div style="font-size: 48px; margin-bottom: 15px;">📝</div>
+          <p style="margin: 0; font-size: 16px;">ยังไม่มีรายการ</p>
+          <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">เริ่มต้นเพิ่มรายรับรายจ่ายของคุณได้เลย</p>
+        </div>
+      `;
+      return;
+    }
+
     records.forEach(item => {
       const li = document.createElement("li");
       li.className = item.type;
 
+      const icon = item.type === "income" ? "💰" : "💸";
+      
       const span = document.createElement("span");
-      span.innerText = `${item.title} : ${item.amount.toLocaleString()} บาท`;
+      span.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 20px;">${icon}</span>
+          <div>
+            <div style="font-weight: 600; font-size: 15px;">${item.title}</div>
+            <div style="font-size: 13px; opacity: 0.8; margin-top: 2px;">${item.amount.toLocaleString()} บาท</div>
+          </div>
+        </div>
+      `;
 
       const btn = document.createElement("button");
       btn.className = "btn-del";
-      btn.innerText = "ลบ";
+      btn.innerHTML = "🗑️";
       btn.onclick = () => deleteRecord(item.id);
 
       li.appendChild(span);
@@ -93,6 +113,8 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function deleteRecord(id) {
+    if (!confirm("ต้องการลบรายการนี้ใช่หรือไม่?")) return;
+    
     records = records.filter(r => r.id !== id);
     localStorage.setItem("records", JSON.stringify(records));
     renderRecords();
@@ -101,13 +123,44 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateTotal() {
-    let total = 0;
+    let totalIncome = 0;
+    let totalExpense = 0;
+    let netTotal = 0;
 
     records.forEach(item => {
-      total += item.type === "income" ? item.amount : -item.amount;
+      if (item.type === "income") {
+        totalIncome += item.amount;
+      } else {
+        totalExpense += item.amount;
+      }
     });
 
-    totalEl.innerText = "คงเหลือสุทธิ: " + total.toLocaleString() + " บาท";
+    netTotal = totalIncome - totalExpense;
+
+    const netColor = netTotal >= 0 ? "#22c55e" : "#ef4444";
+    const netIcon = netTotal >= 0 ? "✅" : "⚠️";
+
+    totalEl.innerHTML = `
+      <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+          <div style="text-align: center;">
+            <div style="font-size: 12px; opacity: 0.8; margin-bottom: 5px;">รายรับทั้งหมด</div>
+            <div style="font-size: 20px; font-weight: 700; color: #22c55e;">💰 ${totalIncome.toLocaleString()}</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 12px; opacity: 0.8; margin-bottom: 5px;">รายจ่ายทั้งหมด</div>
+            <div style="font-size: 20px; font-weight: 700; color: #ef4444;">💸 ${totalExpense.toLocaleString()}</div>
+          </div>
+        </div>
+        <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+        <div style="text-align: center;">
+          <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">คงเหลือสุทธิ</div>
+          <div style="font-size: 28px; font-weight: 700; color: ${netColor};">
+            ${netIcon} ${netTotal.toLocaleString()} บาท
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   function updateChart() {
@@ -124,13 +177,32 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const ctx = document.getElementById("chart").getContext("2d");
     chart = new Chart(ctx, {
-      type: "pie",
+      type: "doughnut",
       data: {
         labels: ["รายรับ", "รายจ่าย"],
         datasets: [{
           data: [income, expense],
-          backgroundColor: ["#22c55e", "#ef4444"]
+          backgroundColor: ["#22c55e", "#ef4444"],
+          borderWidth: 0,
+          hoverOffset: 10
         }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: 'white',
+              padding: 20,
+              font: {
+                size: 14,
+                weight: '600'
+              }
+            }
+          }
+        }
       }
     });
   }
@@ -142,12 +214,14 @@ window.addEventListener("DOMContentLoaded", () => {
       const type = typeEl.value;
 
       if (!title || isNaN(amount)) return alert("กรอกข้อมูลให้ครบ");
+      if (amount <= 0) return alert("จำนวนเงินต้องมากกว่า 0");
 
       records.push({
         id: Date.now(),
         title,
         amount,
-        type
+        type,
+        date: new Date().toLocaleDateString('th-TH')
       });
 
       localStorage.setItem("records", JSON.stringify(records));
@@ -158,20 +232,82 @@ window.addEventListener("DOMContentLoaded", () => {
       renderRecords();
       updateTotal();
       updateChart();
+
+      showNotification("เพิ่มรายการสำเร็จ! ✅");
     });
+  }
+
+  // ฟังก์ชันแสดง Notification
+  function showNotification(message) {
+    const notification = document.createElement("div");
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(34, 197, 94, 0.95);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 12px;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      z-index: 9999;
+      animation: slideIn 0.3s ease;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.style.animation = "slideOut 0.3s ease";
+      setTimeout(() => notification.remove(), 300);
+    }, 2000);
   }
 
   /* ----------- NAVIGATION ----------- */
 
-  // ฟังก์ชันแสดงหน้า Dashboard หลัก
   function showDashboard() {
-    // ซ่อนปุ่มเมนูด้านบน
     if (navMenu) {
       navMenu.style.display = "none";
     }
 
+    let totalIncome = 0;
+    let totalExpense = 0;
+    let netTotal = 0;
+
+    records.forEach(item => {
+      if (item.type === "income") {
+        totalIncome += item.amount;
+      } else {
+        totalExpense += item.amount;
+      }
+    });
+
+    netTotal = totalIncome - totalExpense;
+
     app.innerHTML = `
-      <h2 style="text-align: center; margin-bottom: 30px; font-size: 28px;">🏠 Finance Calculator</h2>
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="font-size: 32px; margin: 0 0 10px 0; background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          🏦 Finance Calculator
+        </h2>
+        <p style="opacity: 0.9; margin: 0; font-size: 15px;">จัดการการเงินของคุณอย่างมีประสิทธิภาพ</p>
+      </div>
+
+      <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; margin-bottom: 30px; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+        <div style="text-align: center; margin-bottom: 15px;">
+          <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">ยอดเงินคงเหลือ</div>
+          <div style="font-size: 36px; font-weight: 700;">${netTotal.toLocaleString()} <span style="font-size: 20px; opacity: 0.8;">บาท</span></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+          <div style="background: rgba(34, 197, 94, 0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(34, 197, 94, 0.3);">
+            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">💰 รายรับ</div>
+            <div style="font-size: 18px; font-weight: 700; color: #22c55e;">+${totalIncome.toLocaleString()}</div>
+          </div>
+          <div style="background: rgba(239, 68, 68, 0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.3);">
+            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">💸 รายจ่าย</div>
+            <div style="font-size: 18px; font-weight: 700; color: #ef4444;">-${totalExpense.toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+
       <div class="dashboard-grid">
         <div class="dashboard-card" id="card-expense">
           <div class="icon">💰</div>
@@ -190,6 +326,12 @@ window.addEventListener("DOMContentLoaded", () => {
           <h3>คำนวณดอกเบี้ย</h3>
           <p>คำนวณดอกเบี้ยธรรมดาและทบต้น</p>
         </div>
+
+        <div class="dashboard-card" id="card-savings">
+          <div class="icon">🎯</div>
+          <h3>เป้าหมายออม</h3>
+          <p>วางแผนและติดตามเป้าหมายการออมเงิน</p>
+        </div>
       </div>
     `;
 
@@ -197,7 +339,6 @@ window.addEventListener("DOMContentLoaded", () => {
     sectionList.style.display = "none";
     sectionChart.style.display = "none";
 
-    // เพิ่ม event listeners สำหรับ cards
     document.getElementById("card-expense").onclick = () => {
       if (navMenu) navMenu.style.display = "flex";
       showExpensePage();
@@ -210,10 +351,22 @@ window.addEventListener("DOMContentLoaded", () => {
       if (navMenu) navMenu.style.display = "flex";
       showInterestPage();
     };
+    document.getElementById("card-savings").onclick = () => {
+      if (navMenu) navMenu.style.display = "flex";
+      showSavingsPage();
+    };
   }
 
   function showExpensePage() {
-    app.innerHTML = "<h2>💰 ระบบจัดการรายรับ - รายจ่าย</h2>";
+    app.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <div style="font-size: 36px;">💰</div>
+        <div>
+          <h2 style="margin: 0; font-size: 24px;">ระบบจัดการรายรับ - รายจ่าย</h2>
+          <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">บันทึกและติดตามรายรับรายจ่ายของคุณ</p>
+        </div>
+      </div>
+    `;
 
     sectionRecords.style.display = "block";
     sectionList.style.display = "block";
@@ -226,7 +379,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
   function showTaxPage() {
     app.innerHTML = `
-      <h2>📊 คำนวณภาษี</h2>
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <div style="font-size: 36px;">📊</div>
+        <div>
+          <h2 style="margin: 0; font-size: 24px;">คำนวณภาษี</h2>
+          <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">คำนวณภาษีเงินได้บุคคลธรรมดา</p>
+        </div>
+      </div>
 
       <label>รายได้ต่อปี (บาท)</label>
       <input id="income" type="number" placeholder="เช่น 600000">
@@ -298,12 +457,20 @@ window.addEventListener("DOMContentLoaded", () => {
           <p style="margin: 8px 0; font-size: 18px; opacity: 0.9;">รายได้หลังหักภาษี: ${(income - tax).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
         </div>
       `;
+
+      showNotification("คำนวณภาษีสำเร็จ! ✅");
     }
   }
 
   function showInterestPage() {
     app.innerHTML = `
-      <h2>📈 คำนวณดอกเบี้ย</h2>
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <div style="font-size: 36px;">📈</div>
+        <div>
+          <h2 style="margin: 0; font-size: 24px;">คำนวณดอกเบี้ย</h2>
+          <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">คำนวณดอกเบี้ยธรรมดาและทบต้น</p>
+        </div>
+      </div>
 
       <label>จำนวนเงินต้น (บาท)</label>
       <input id="p" type="number" placeholder="เช่น 100000" step="0.01">
@@ -406,7 +573,132 @@ window.addEventListener("DOMContentLoaded", () => {
           <p style="margin: 8px 0; font-size: 22px;"><strong>💰 รวมเงินทั้งหมด: ${result.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
         </div>
       `;
+
+      showNotification("คำนวณดอกเบี้ยสำเร็จ! ✅");
     }
+  }
+
+  function showSavingsPage() {
+    let savingsGoals = JSON.parse(localStorage.getItem("savingsGoals")) || [];
+
+    function renderSavingsGoals() {
+      let goalsHTML = "";
+
+      if (savingsGoals.length === 0) {
+        goalsHTML = `
+          <div style="text-align: center; padding: 40px 20px; opacity: 0.7;">
+            <div style="font-size: 48px; margin-bottom: 15px;">🎯</div>
+            <p style="margin: 0; font-size: 16px;">ยังไม่มีเป้าหมายการออม</p>
+            <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">เริ่มต้นวางแผนการออมเงินของคุณได้เลย</p>
+          </div>
+        `;
+      } else {
+        savingsGoals.forEach(goal => {
+          const progress = (goal.current / goal.target) * 100;
+          const progressColor = progress >= 100 ? "#22c55e" : progress >= 50 ? "#f59e0b" : "#667eea";
+          
+          goalsHTML += `
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.2);">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                <div>
+                  <h4 style="margin: 0 0 5px 0; font-size: 18px;">${goal.name}</h4>
+                  <p style="margin: 0; opacity: 0.8; font-size: 13px;">${goal.current.toLocaleString()} / ${goal.target.toLocaleString()} บาท</p>
+                </div>
+                <button onclick="deleteSavingsGoal(${goal.id})" style="background: rgba(239, 68, 68, 0.8); padding: 8px 15px; font-size: 13px; width: auto; margin: 0; border-radius: 8px; border: none; cursor: pointer; color: white;">🗑️</button>
+              </div>
+              
+              <div style="background: rgba(0, 0, 0, 0.2); height: 12px; border-radius: 20px; overflow: hidden; margin-bottom: 10px;">
+                <div style="background: ${progressColor}; height: 100%; width: ${Math.min(progress, 100)}%; transition: width 0.3s ease;"></div>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 14px; font-weight: 600;">${progress.toFixed(1)}% สำเร็จ</span>
+                <button onclick="addToSavingsGoal(${goal.id})" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 8px 15px; font-size: 13px; width: auto; margin: 0; border-radius: 8px; border: none; cursor: pointer; color: white; font-weight: 600;">➕ เพิ่มเงิน</button>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      app.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+          <div style="font-size: 36px;">🎯</div>
+          <div>
+            <h2 style="margin: 0; font-size: 24px;">เป้าหมายออม</h2>
+            <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">วางแผนและติดตามเป้าหมายการออมเงิน</p>
+          </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+          <h3 style="margin: 0 0 15px 0; font-size: 18px;">เพิ่มเป้าหมายใหม่</h3>
+          
+          <label>ชื่อเป้าหมาย</label>
+          <input id="goalName" type="text" placeholder="เช่น ซื้อรถยนต์">
+          
+          <label>จำนวนเงินเป้าหมาย (บาท)</label>
+          <input id="goalTarget" type="number" placeholder="เช่น 500000">
+          
+          <button id="addGoalBtn">เพิ่มเป้าหมาย</button>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+          <h3 style="margin: 0 0 20px 0; font-size: 18px;">เป้าหมายของคุณ</h3>
+          ${goalsHTML}
+        </div>
+      `;
+
+      sectionRecords.style.display = "none";
+      sectionList.style.display = "none";
+      sectionChart.style.display = "none";
+
+      const addGoalBtn = document.getElementById("addGoalBtn");
+      if (addGoalBtn) {
+        addGoalBtn.onclick = () => {
+          const name = document.getElementById("goalName").value.trim();
+          const target = +document.getElementById("goalTarget").value;
+
+          if (!name || !target || target <= 0) {
+            alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+            return;
+          }
+
+          savingsGoals.push({
+            id: Date.now(),
+            name,
+            target,
+            current: 0
+          });
+
+          localStorage.setItem("savingsGoals", JSON.stringify(savingsGoals));
+          showNotification("เพิ่มเป้าหมายสำเร็จ! 🎯");
+          renderSavingsGoals();
+        };
+      }
+    }
+
+    window.deleteSavingsGoal = (id) => {
+      if (!confirm("ต้องการลบเป้าหมายนี้ใช่หรือไม่?")) return;
+      
+      savingsGoals = savingsGoals.filter(g => g.id !== id);
+      localStorage.setItem("savingsGoals", JSON.stringify(savingsGoals));
+      showNotification("ลบเป้าหมายสำเร็จ! ✅");
+      renderSavingsGoals();
+    };
+
+    window.addToSavingsGoal = (id) => {
+      const amount = prompt("ระบุจำนวนเงินที่ต้องการเพิ่ม (บาท):");
+      if (!amount || isNaN(amount) || +amount <= 0) return;
+
+      const goal = savingsGoals.find(g => g.id === id);
+      if (goal) {
+        goal.current += +amount;
+        localStorage.setItem("savingsGoals", JSON.stringify(savingsGoals));
+        showNotification("เพิ่มเงินสำเร็จ! 💰");
+        renderSavingsGoals();
+      }
+    };
+
+    renderSavingsGoals();
   }
 
   // Event Listeners สำหรับปุ่มเมนู
@@ -433,5 +725,31 @@ window.addEventListener("DOMContentLoaded", () => {
     updateTotal();
     updateChart();
   }
+
+  // เพิ่ม CSS สำหรับ Animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
 
 });
