@@ -1024,35 +1024,22 @@ function displayPaymentHistory(loanData) {
       }
 
       const totalFutureValue = futureValueInitial + futureValueMonthly;
-const totalInvested = initialInvest + (monthlyInvest * totalMonths);
-const totalReturn = totalFutureValue - totalInvested;
+      const totalInvested = initialInvest + (monthlyInvest * totalMonths);
+      const totalReturn = totalFutureValue - totalInvested;
 
-// คำนวณภาษี 10% จากกำไร
-const taxAmount = totalReturn * 0.10;
-const netReturn = totalReturn - taxAmount;
-const finalAmount = totalInvested + netReturn;
-
-document.getElementById("dividend-result").innerHTML = `
-  <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
-    <p style="margin: 0 0 15px 0; font-size: 18px;"><strong>📊 สรุปการคำนวณผลตอบแทน</strong></p>
-    <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
-    <p style="margin: 8px 0;">เงินลงทุนเริ่มต้น: <strong>${initialInvest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
-    <p style="margin: 8px 0;">ลงทุนเพิ่มรายเดือน: <strong>${monthlyInvest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
-    <p style="margin: 8px 0;">ผลตอบแทนเฉลี่ย: <strong>${(annualReturn * 100).toFixed(2)}% ต่อปี</strong></p>
-    <p style="margin: 8px 0;">ระยะเวลา: <strong>${years} ปี</strong></p>
-    <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
-    <p style="margin: 8px 0; font-size: 16px;">เงินลงทุนรวมทั้งหมด: ${totalInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
-    <p style="margin: 8px 0; font-size: 16px;">มูลค่าทั้งหมด (ก่อนหักภาษี): ${totalFutureValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
-    <p style="margin: 8px 0; font-size: 16px; color: #22c55e;">กำไรจากการลงทุน (ก่อนหักภาษี): +${totalReturn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
-    <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
-    <div style="background: rgba(239, 68, 68, 0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3); margin: 10px 0;">
-      <p style="margin: 0 0 5px 0; font-size: 14px; opacity: 0.9;">⚠️ หักภาษี 10% จากกำไร</p>
-      <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ef4444;">-${taxAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
-    </div>
-    <p style="margin: 12px 0 8px 0; font-size: 20px; color: #22c55e;"><strong>💰 กำไรสุทธิ (หลังหักภาษี): +${netReturn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
-    <p style="margin: 8px 0; font-size: 22px;"><strong>💵 มูลค่าสุทธิที่ได้รับ: ${finalAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
-  </div>
-`;
+      document.getElementById("dividend-result").innerHTML = `
+        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+          <p style="margin: 0 0 15px 0; font-size: 18px;"><strong>📊 สรุปการคำนวณผลตอบแทน</strong></p>
+          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+          <p style="margin: 8px 0;">เงินลงทุนเริ่มต้น: <strong>${initialInvest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
+          <p style="margin: 8px 0;">ลงทุนเพิ่มรายเดือน: <strong>${monthlyInvest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
+          <p style="margin: 8px 0;">ผลตอบแทนเฉลี่ย: <strong>${(annualReturn * 100).toFixed(2)}% ต่อปี</strong></p>
+          <p style="margin: 8px 0;">ระยะเวลา: <strong>${years} ปี</strong></p>
+          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+          <p style="margin: 8px 0; font-size: 16px;">เงินลงทุนรวมทั้งหมด: ${totalInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
+          <p style="margin: 12px 0 8px 0; font-size: 20px; color: #22c55e;"><strong>💰 กำไรจากการลงทุน: +${totalReturn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+          <p style="margin: 8px 0; font-size: 22px;"><strong>💵 มูลค่ารวมทั้งหมด: ${totalFutureValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+        </div>
       `;
 
       showNotification("คำนวณเงินปันผลสำเร็จ! ✅");
