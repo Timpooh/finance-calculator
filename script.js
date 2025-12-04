@@ -593,6 +593,8 @@ window.addEventListener("DOMContentLoaded", () => {
   // ฟังก์ชันคำนวณ กยศ.
 // แทนที่ฟังก์ชัน showStudentLoanPage() เดิมในไฟล์ script.js
 
+// แทนที่ฟังก์ชัน showStudentLoanPage() เดิมในไฟล์ script.js
+
 function showStudentLoanPage() {
   // โหลดข้อมูล กยศ. จาก localStorage
   let loanData = JSON.parse(localStorage.getItem("studentLoan")) || null;
@@ -823,17 +825,34 @@ function makePayment(loanData, paymentAmount) {
   // คำนวณดอกเบี้ยของเดือนนี้
   const interestThisMonth = loanData.remainingBalance * loanData.monthlyRate;
   
-  // จำนวนที่ไปลดเงินต้น
-  const principalPayment = Math.min(paymentAmount - interestThisMonth, loanData.remainingBalance);
+  // คำนวณจำนวนที่ควรจ่าย (ค่าผ่อนมาตรฐาน)
+  const shouldPay = loanData.monthlyPayment;
   
-  // ยอดคงเหลือใหม่
-  const newBalance = Math.max(0, loanData.remainingBalance - principalPayment);
+  // คำนวณเงินที่ค้างชำระ (ถ้าจ่ายไม่ครบตามที่กำหนด)
+  const unpaid = Math.max(0, shouldPay - paymentAmount);
+  
+  // จำนวนที่ไปลดเงินต้น (หลังหักดอกเบี้ย)
+  let principalPayment = 0;
+  if (paymentAmount > interestThisMonth) {
+    principalPayment = Math.min(paymentAmount - interestThisMonth, loanData.remainingBalance);
+  }
+  
+  // ยอดคงเหลือใหม่ (เงินต้นที่เหลือ + เงินค้างชำระ)
+  let newBalance = Math.max(0, loanData.remainingBalance - principalPayment + unpaid);
+  
+  // ถ้าชำระมากกว่ายอดคงเหลือ ให้ชำระหมดเลย
+  if (paymentAmount >= loanData.remainingBalance + interestThisMonth) {
+    principalPayment = loanData.remainingBalance;
+    newBalance = 0;
+  }
 
   // บันทึกการชำระ
   loanData.payments.push({
     month: loanData.currentMonth + 1,
     date: new Date().toISOString(),
     paymentAmount: paymentAmount,
+    shouldPay: shouldPay,
+    unpaid: unpaid,
     interestPaid: interestThisMonth,
     principalPaid: principalPayment,
     remainingBalance: newBalance
@@ -847,6 +866,8 @@ function makePayment(loanData, paymentAmount) {
 
   if (newBalance <= 0) {
     showNotification("🎉 ยินดีด้วย! ชำระเงินกู้ครบถ้วนแล้ว!");
+  } else if (unpaid > 0) {
+    showNotification(`⚠️ ชำระไม่ครบ! เงินค้าง ${unpaid.toFixed(2)} บาท จะถูกบวกเข้ายอดเดือนหน้า`);
   } else {
     showNotification("บันทึกการชำระเงินสำเร็จ! ✅");
   }
@@ -882,11 +903,14 @@ function displayPaymentHistory(loanData) {
       minute: '2-digit'
     });
 
+    const borderColor = payment.unpaid > 0 ? '#ef4444' : '#22c55e';
+    const statusIcon = payment.unpaid > 0 ? '⚠️' : '✅';
+
     html += `
-      <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid #22c55e;">
+      <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid ${borderColor};">
         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
           <div>
-            <div style="font-weight: 600; font-size: 15px;">งวดที่ ${payment.month}</div>
+            <div style="font-weight: 600; font-size: 15px;">${statusIcon} งวดที่ ${payment.month}</div>
             <div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">${dateStr}</div>
           </div>
           <div style="text-align: right;">
@@ -895,6 +919,16 @@ function displayPaymentHistory(loanData) {
           </div>
         </div>
         <div style="font-size: 13px; opacity: 0.9; line-height: 1.6;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>ควรจ่าย:</span>
+            <span><strong>${payment.shouldPay.toLocaleString(undefined, {maximumFractionDigits: 2})}</strong> บาท</span>
+          </div>
+          ${payment.unpaid > 0 ? `
+          <div style="display: flex; justify-content: space-between; color: #ef4444;">
+            <span>ค้างชำระ:</span>
+            <span><strong>+${payment.unpaid.toLocaleString(undefined, {maximumFractionDigits: 2})}</strong> บาท</span>
+          </div>
+          ` : ''}
           <div style="display: flex; justify-content: space-between;">
             <span>ดอกเบี้ย:</span>
             <span><strong>${payment.interestPaid.toLocaleString(undefined, {maximumFractionDigits: 2})}</strong> บาท</span>
