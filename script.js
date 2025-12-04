@@ -949,127 +949,117 @@ function displayPaymentHistory(loanData) {
   historyDiv.innerHTML = html;
 }
   // ฟังก์ชันคำนวณเงินปันผลกองทุน
-  function showDividendPage() {
-    app.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-        <div style="font-size: 36px;">💵</div>
-        <div>
-          <h2 style="margin: 0; font-size: 24px;">คำนวณเงินปันผลกองทุน</h2>
-          <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">คำนวณผลตอบแทนจากการลงทุนกองทุนรวม</p>
+  // ฟังก์ชันคำนวณเงินปันผลกองทุน (ฉบับสมบูรณ์)
+function showDividendPage() {
+  app.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+      <div style="font-size: 36px;">💵</div>
+      <div>
+        <h2 style="margin: 0; font-size: 24px;">คำนวณเงินปันผลกองทุน</h2>
+        <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">คำนวณผลตอบแทนจากการลงทุนกองทุนรวม</p>
+      </div>
+    </div>
+
+    <label>จำนวนเงินลงทุนเริ่มต้น (บาท)</label>
+    <input id="invest-amount" type="number" placeholder="เช่น 100000" step="0.01">
+    
+    <label>ผลตอบแทนเฉลี่ยต่อปี (%)</label>
+    <input id="return-rate" type="number" placeholder="เช่น 5-8%" step="0.01">
+
+    <label>ระยะเวลาลงทุน (ปี)</label>
+    <input id="invest-years" type="number" placeholder="เช่น 10" min="1">
+
+    <label>ลงทุนเพิ่มสม่ำเสมอทุกเดือน (บาท)</label>
+    <input id="monthly-invest" type="number" placeholder="0 หากไม่มี (ไม่บังคับ)" step="0.01" value="0">
+
+    <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.2);">
+      <p style="margin: 0 0 8px 0; font-weight: bold;">💡 ข้อมูลเพิ่มเติม</p>
+      <p style="margin: 4px 0;">• กองทุนหุ้น: ผลตอบแทนเฉลี่ย 8-12% ต่อปี (ความเสี่ยงสูง)</p>
+      <p style="margin: 4px 0;">• กองทุนผสม: ผลตอบแทนเฉลี่ย 5-8% ต่อปี (ความเสี่ยงปานกลาง)</p>
+      <p style="margin: 4px 0;">• กองทุนตราสารหนี้: ผลตอบแทนเฉลี่ย 2-4% ต่อปี (ความเสี่ยงต่ำ)</p>
+      <p style="margin: 4px 0;">• ค่าใช้จ่ายและภาษีอาจลดผลตอบแทนจริง</p>
+      <p style="margin: 4px 0; color: #fbbf24; font-weight: 600;">⚠️ ระบบจะหักภาษี 10% จากกำไรอัตโนมัติ</p>
+    </div>
+
+    <button id="calc-dividend">คำนวณ</button>
+    <div id="dividend-result" class="result"></div>
+  `;
+
+  sectionRecords.style.display = "none";
+  sectionList.style.display = "none";
+  sectionChart.style.display = "none";
+
+  document.getElementById("calc-dividend").onclick = () => {
+    const initialInvest = +document.getElementById("invest-amount").value;
+    const annualReturn = +document.getElementById("return-rate").value / 100;
+    const years = +document.getElementById("invest-years").value;
+    const monthlyInvest = +document.getElementById("monthly-invest").value || 0;
+
+    // ตรวจสอบข้อมูลที่กรอก
+    if (!initialInvest || initialInvest < 0) {
+      alert("กรุณากรอกจำนวนเงินลงทุนที่ถูกต้อง");
+      return;
+    }
+
+    if (!annualReturn || annualReturn <= 0) {
+      alert("กรุณากรอกผลตอบแทนที่ถูกต้อง");
+      return;
+    }
+
+    if (!years || years <= 0) {
+      alert("กรุณากรอกระยะเวลาลงทุนที่ถูกต้อง");
+      return;
+    }
+
+    // คำนวณมูลค่าสุดท้าย (Future Value with Monthly Contributions)
+    const monthlyRate = annualReturn / 12;
+    const totalMonths = years * 12;
+
+    // มูลค่าจากเงินลงทุนเริ่มต้น (ทบต้น)
+    const futureValueInitial = initialInvest * Math.pow(1 + annualReturn, years);
+
+    // มูลค่าจากการลงทุนรายเดือน
+    let futureValueMonthly = 0;
+    if (monthlyInvest > 0 && monthlyRate > 0) {
+      futureValueMonthly = monthlyInvest * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate);
+    } else if (monthlyInvest > 0) {
+      futureValueMonthly = monthlyInvest * totalMonths;
+    }
+
+    const totalFutureValue = futureValueInitial + futureValueMonthly;
+    const totalInvested = initialInvest + (monthlyInvest * totalMonths);
+    const totalReturn = totalFutureValue - totalInvested;
+
+    // คำนวณภาษี 10% จากกำไร
+    const taxAmount = totalReturn * 0.10;
+    const netReturn = totalReturn - taxAmount;
+    const finalAmount = totalInvested + netReturn;
+
+    document.getElementById("dividend-result").innerHTML = `
+      <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+        <p style="margin: 0 0 15px 0; font-size: 18px;"><strong>📊 สรุปการคำนวณผลตอบแทน</strong></p>
+        <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+        <p style="margin: 8px 0;">เงินลงทุนเริ่มต้น: <strong>${initialInvest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
+        <p style="margin: 8px 0;">ลงทุนเพิ่มรายเดือน: <strong>${monthlyInvest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
+        <p style="margin: 8px 0;">ผลตอบแทนเฉลี่ย: <strong>${(annualReturn * 100).toFixed(2)}% ต่อปี</strong></p>
+        <p style="margin: 8px 0;">ระยะเวลา: <strong>${years} ปี</strong></p>
+        <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+        <p style="margin: 8px 0; font-size: 16px;">เงินลงทุนรวมทั้งหมด: ${totalInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
+        <p style="margin: 8px 0; font-size: 16px;">มูลค่าทั้งหมด (ก่อนหักภาษี): ${totalFutureValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
+        <p style="margin: 8px 0; font-size: 16px; color: #22c55e;">กำไรจากการลงทุน (ก่อนหักภาษี): +${totalReturn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
+        <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+        <div style="background: rgba(239, 68, 68, 0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3); margin: 10px 0;">
+          <p style="margin: 0 0 5px 0; font-size: 14px; opacity: 0.9;">⚠️ หักภาษี 10% จากกำไร</p>
+          <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ef4444;">-${taxAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
         </div>
+        <p style="margin: 12px 0 8px 0; font-size: 20px; color: #22c55e;"><strong>💰 กำไรสุทธิ (หลังหักภาษี): +${netReturn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+        <p style="margin: 8px 0; font-size: 22px;"><strong>💵 มูลค่าสุทธิที่ได้รับ: ${finalAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
       </div>
-
-      <label>จำนวนเงินลงทุนเริ่มต้น (บาท)</label>
-      <input id="invest-amount" type="number" placeholder="เช่น 100000" step="0.01">
-      
-      <label>ผลตอบแทนเฉลี่ยต่อปี (%)</label>
-      <input id="return-rate" type="number" placeholder="เช่น 5-8%" step="0.01">
-
-      <label>ระยะเวลาลงทุน (ปี)</label>
-      <input id="invest-years" type="number" placeholder="เช่น 10" min="1">
-
-      <label>ลงทุนเพิ่มสม่ำเสมอทุกเดือน (บาท)</label>
-      <input id="monthly-invest" type="number" placeholder="0 หากไม่มี (ไม่บังคับ)" step="0.01" value="0">
-
-      <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.2);">
-        <p style="margin: 0 0 8px 0; font-weight: bold;">💡 ข้อมูลเพิ่มเติม</p>
-        <p style="margin: 4px 0;">• กองทุนหุ้น: ผลตอบแทนเฉลี่ย 8-12% ต่อปี (ความเสี่ยงสูง)</p>
-        <p style="margin: 4px 0;">• กองทุนผสม: ผลตอบแทนเฉลี่ย 5-8% ต่อปี (ความเสี่ยงปานกลาง)</p>
-        <p style="margin: 4px 0;">• กองทุนตราสารหนี้: ผลตอบแทนเฉลี่ย 2-4% ต่อปี (ความเสี่ยงต่ำ)</p>
-        <p style="margin: 4px 0;">• ค่าใช้จ่ายและภาษีอาจลดผลตอบแทนจริง</p>
-      </div>
-
-      <button id="calc-dividend">คำนวณ</button>
-      <div id="dividend-result" class="result"></div>
     `;
 
-    sectionRecords.style.display = "none";
-    sectionList.style.display = "none";
-    sectionChart.style.display = "none";
-
-    document.getElementById("calc-dividend").onclick = () => {
-      const initialInvest = +document.getElementById("invest-amount").value;
-      const annualReturn = +document.getElementById("return-rate").value / 100;
-      const years = +document.getElementById("invest-years").value;
-      const monthlyInvest = +document.getElementById("monthly-invest").value || 0;
-
-      if (!initialInvest || initialInvest < 0) {
-        alert("กรุณากรอกจำนวนเงินลงทุนที่ถูกต้อง");
-        return;
-      }
-
-      if (!annualReturn || annualReturn <= 0) {
-        alert("กรุณากรอกผลตอบแทนที่ถูกต้อง");
-        return;
-      }
-
-      if (!years || years <= 0) {
-        alert("กรุณากรอกระยะเวลาลงทุนที่ถูกต้อง");
-        return;
-      }
-
-      // คำนวณมูลค่าสุดท้าย (Future Value with Monthly Contributions)
-      const monthlyRate = annualReturn / 12;
-      const totalMonths = years * 12;
-
-      // มูลค่าจากเงินลงทุนเริ่มต้น (ทบต้น)
-      const futureValueInitial = initialInvest * Math.pow(1 + annualReturn, years);
-
-      // มูลค่าจากการลงทุนรายเดือน
-      let futureValueMonthly = 0;
-      if (monthlyInvest > 0 && monthlyRate > 0) {
-        futureValueMonthly = monthlyInvest * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate);
-      } else if (monthlyInvest > 0) {
-        futureValueMonthly = monthlyInvest * totalMonths;
-      }
-
-      const totalFutureValue = futureValueInitial + futureValueMonthly;
-      const totalInvested = initialInvest + (monthlyInvest * totalMonths);
-      const totalReturn = totalFutureValue - totalInvested;
-
-      document.getElementById("dividend-result").innerHTML = `
-        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
-          <p style="margin: 0 0 15px 0; font-size: 18px;"><strong>📊 สรุปการคำนวณผลตอบแทน</strong></p>
-          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
-          <p style="margin: 8px 0;">เงินลงทุนเริ่มต้น: <strong>${initialInvest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
-          <p style="margin: 8px 0;">ลงทุนเพิ่มรายเดือน: <strong>${monthlyInvest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
-          <p style="margin: 8px 0;">ผลตอบแทนเฉลี่ย: <strong>${(annualReturn * 100).toFixed(2)}% ต่อปี</strong></p>
-          <p style="margin: 8px 0;">ระยะเวลา: <strong>${years} ปี</strong></p>
-          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
-          <p style="margin: 8px 0; font-size: 16px;">เงินลงทุนรวมทั้งหมด: ${totalInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
-          <p style="margin: 12px 0 8px 0; font-size: 20px; color: #22c55e;"><strong>💰 กำไรจากการลงทุน: +${totalReturn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
-          <p style="margin: 8px 0; font-size: 22px;"><strong>💵 มูลค่ารวมทั้งหมด: ${totalFutureValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
-        </div>
-      `;
-
-      showNotification("คำนวณเงินปันผลสำเร็จ! ✅");
-    };
-  }
-
-  // Event Listeners สำหรับปุ่มเมนู
-  if (btnExpense) {
-    btnExpense.onclick = () => showExpensePage();
-  }
-
-  if (btnTax) {
-    btnTax.onclick = () => showTaxPage();
-  }
-
-  if (btnInterest) {
-    btnInterest.onclick = () => showInterestPage();
-  }
-
-  if (btnStudentLoan) {
-    btnStudentLoan.onclick = () => showStudentLoanPage();
-  }
-
-  if (btnDividend) {
-    btnDividend.onclick = () => showDividendPage();
-  }
-
-  if (btnHome) {
-    btnHome.onclick = () => showDashboard();
-  }
+    showNotification("คำนวณเงินปันผลสำเร็จ! ✅");
+  };
+}
 
   // เริ่มต้นที่หน้า Dashboard
   if (listEl) {
