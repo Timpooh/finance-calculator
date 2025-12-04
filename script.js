@@ -591,13 +591,20 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // ฟังก์ชันคำนวณ กยศ.
-  function showStudentLoanPage() {
+// แทนที่ฟังก์ชัน showStudentLoanPage() เดิมในไฟล์ script.js
+
+function showStudentLoanPage() {
+  // โหลดข้อมูล กยศ. จาก localStorage
+  let loanData = JSON.parse(localStorage.getItem("studentLoan")) || null;
+
+  // ถ้ายังไม่มีข้อมูล แสดงฟอร์มสร้างเงินกู้ใหม่
+  if (!loanData) {
     app.innerHTML = `
       <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
         <div style="font-size: 36px;">🎓</div>
         <div>
-          <h2 style="margin: 0; font-size: 24px;">คำนวณเงินกู้ กยศ.</h2>
-          <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">คำนวณการผ่อนชำระเงินกู้ยืมเพื่อการศึกษา</p>
+          <h2 style="margin: 0; font-size: 24px;">สร้างแผนชำระเงินกู้ กยศ.</h2>
+          <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">ตั้งค่าข้อมูลเงินกู้และเริ่มติดตามการชำระ</p>
         </div>
       </div>
 
@@ -608,7 +615,7 @@ window.addEventListener("DOMContentLoaded", () => {
       <input id="loan-rate" type="number" placeholder="กยศ. ประมาณ 1%" step="0.01" value="1">
 
       <label>ระยะเวลาผ่อนชำระ (ปี)</label>
-      <input id="loan-years" type="number" placeholder="เช่น 15" min="1">
+      <input id="loan-years" type="number" placeholder="เช่น 15" min="1" max="30">
 
       <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.2);">
         <p style="margin: 0 0 8px 0; font-weight: bold;">💡 ข้อมูล กยศ.</p>
@@ -617,67 +624,296 @@ window.addEventListener("DOMContentLoaded", () => {
         <p style="margin: 4px 0;">• ระยะเวลาผ่อนชำระสูงสุด 15 ปี</p>
       </div>
 
-      <button id="calc-student-loan">คำนวณ</button>
-      <div id="student-loan-result" class="result"></div>
+      <button id="create-loan">สร้างแผนชำระเงินกู้</button>
     `;
 
     sectionRecords.style.display = "none";
     sectionList.style.display = "none";
     sectionChart.style.display = "none";
 
-    document.getElementById("calc-student-loan").onclick = () => {
-      const loanAmount = +document.getElementById("loan-amount").value;
+    document.getElementById("create-loan").onclick = () => {
+      const principal = +document.getElementById("loan-amount").value;
       const annualRate = +document.getElementById("loan-rate").value / 100;
       const years = +document.getElementById("loan-years").value;
 
-      if (!loanAmount || loanAmount <= 0) {
+      if (!principal || principal <= 0) {
         alert("กรุณากรอกจำนวนเงินกู้ที่ถูกต้อง");
         return;
       }
 
-      if (!annualRate || annualRate < 0) {
+      if (annualRate < 0) {
         alert("กรุณากรอกอัตราดอกเบี้ยที่ถูกต้อง");
         return;
       }
 
-      if (!years || years <= 0) {
-        alert("กรุณากรอกระยะเวลาผ่อนชำระที่ถูกต้อง");
+      if (!years || years <= 0 || years > 30) {
+        alert("กรุณากรอกระยะเวลาผ่อนชำระ 1-30 ปี");
         return;
       }
 
-      // คำนวณดอกเบี้ยต่อเดือน
+      // คำนวณค่าผ่อนต่อเดือน
       const monthlyRate = annualRate / 12;
       const totalMonths = years * 12;
-
-      // สูตรคำนวณการผ่อนชำระรายเดือน (Amortization)
+      
       let monthlyPayment;
       if (monthlyRate === 0) {
-        monthlyPayment = loanAmount / totalMonths;
+        monthlyPayment = principal / totalMonths;
       } else {
-        monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+        monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / 
+                        (Math.pow(1 + monthlyRate, totalMonths) - 1);
       }
 
-      const totalPayment = monthlyPayment * totalMonths;
-      const totalInterest = totalPayment - loanAmount;
+      // สร้างข้อมูลเงินกู้
+      loanData = {
+        principal: principal,
+        annualRate: annualRate,
+        monthlyRate: monthlyRate,
+        years: years,
+        totalMonths: totalMonths,
+        monthlyPayment: monthlyPayment,
+        remainingBalance: principal,
+        currentMonth: 0,
+        payments: [], // เก็บประวัติการชำระ
+        createdDate: new Date().toISOString()
+      };
 
-      document.getElementById("student-loan-result").innerHTML = `
-        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
-          <p style="margin: 0 0 15px 0; font-size: 18px;"><strong>📊 สรุปการคำนวณ กยศ.</strong></p>
-          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
-          <p style="margin: 8px 0;">จำนวนเงินกู้: <strong>${loanAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
-          <p style="margin: 8px 0;">อัตราดอกเบี้ย: <strong>${(annualRate * 100).toFixed(2)}% ต่อปี</strong></p>
-          <p style="margin: 8px 0;">ระยะเวลาผ่อน: <strong>${years} ปี (${totalMonths} เดือน)</strong></p>
-          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
-          <p style="margin: 12px 0 8px 0; font-size: 22px;"><strong>💰 ผ่อนชำระต่อเดือน: ${monthlyPayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
-          <p style="margin: 8px 0; font-size: 16px;">ดอกเบี้ยรวม: ${totalInterest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
-          <p style="margin: 8px 0; font-size: 16px;">ยอดชำระรวมทั้งหมด: ${totalPayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
-        </div>
-      `;
-
-      showNotification("คำนวณ กยศ. สำเร็จ! ✅");
+      localStorage.setItem("studentLoan", JSON.stringify(loanData));
+      showNotification("สร้างแผนชำระเงินกู้สำเร็จ! 🎉");
+      showStudentLoanPage(); // รีเฟรชหน้า
     };
+
+  } else {
+    // มีข้อมูลแล้ว แสดงหน้าจัดการและชำระเงิน
+    displayLoanManagement(loanData);
+  }
+}
+
+function displayLoanManagement(loanData) {
+  const percentPaid = ((loanData.principal - loanData.remainingBalance) / loanData.principal) * 100;
+  const totalPaid = loanData.principal - loanData.remainingBalance;
+  const monthsRemaining = loanData.totalMonths - loanData.currentMonth;
+
+  app.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+      <div style="font-size: 36px;">🎓</div>
+      <div style="flex: 1;">
+        <h2 style="margin: 0; font-size: 24px;">จัดการเงินกู้ กยศ.</h2>
+        <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">ติดตามและบันทึกการชำระเงินกู้</p>
+      </div>
+      <button id="reset-loan" style="background: rgba(239, 68, 68, 0.8); padding: 10px 20px; width: auto; margin: 0; font-size: 14px;">
+        🗑️ ลบข้อมูล
+      </button>
+    </div>
+
+    <!-- สรุปภาพรวม -->
+    <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.3);">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">ยอดคงเหลือ</div>
+        <div style="font-size: 36px; font-weight: 700; color: ${loanData.remainingBalance > 0 ? '#f59e0b' : '#22c55e'};">
+          ${loanData.remainingBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} 
+          <span style="font-size: 20px; opacity: 0.8;">บาท</span>
+        </div>
+      </div>
+
+      <div style="background: rgba(0, 0, 0, 0.2); height: 16px; border-radius: 20px; overflow: hidden; margin-bottom: 15px;">
+        <div style="background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%); height: 100%; width: ${percentPaid}%; transition: width 0.5s ease;"></div>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 20px;">
+        <span style="font-size: 18px; font-weight: 600;">${percentPaid.toFixed(2)}% ชำระแล้ว</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div style="background: rgba(34, 197, 94, 0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(34, 197, 94, 0.3); text-align: center;">
+          <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">💰 ชำระไปแล้ว</div>
+          <div style="font-size: 18px; font-weight: 700; color: #22c55e;">${totalPaid.toLocaleString(undefined, {maximumFractionDigits: 2})}</div>
+        </div>
+        <div style="background: rgba(245, 158, 11, 0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.3); text-align: center;">
+          <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">📅 เหลืออีก</div>
+          <div style="font-size: 18px; font-weight: 700; color: #f59e0b;">${monthsRemaining} เดือน</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ข้อมูลเงินกู้ -->
+    <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+      <h3 style="margin: 0 0 15px 0; font-size: 18px;">📋 ข้อมูลเงินกู้</h3>
+      <div style="font-size: 14px; line-height: 1.8;">
+        <p style="margin: 5px 0;">เงินกู้เริ่มต้น: <strong>${loanData.principal.toLocaleString()} บาท</strong></p>
+        <p style="margin: 5px 0;">อัตราดอกเบี้ย: <strong>${(loanData.annualRate * 100).toFixed(2)}% ต่อปี</strong></p>
+        <p style="margin: 5px 0;">ระยะเวลา: <strong>${loanData.years} ปี (${loanData.totalMonths} เดือน)</strong></p>
+        <p style="margin: 5px 0;">ค่าผ่อนต่อเดือน: <strong>${loanData.monthlyPayment.toLocaleString(undefined, {maximumFractionDigits: 2})} บาท</strong></p>
+      </div>
+    </div>
+
+    <!-- ฟอร์มชำระเงิน -->
+    <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+      <h3 style="margin: 0 0 15px 0; font-size: 18px;">💳 บันทึกการชำระเงิน</h3>
+      
+      <label>จำนวนเงินที่ชำระ (บาท)</label>
+      <input id="payment-amount" type="number" placeholder="แนะนำ: ${loanData.monthlyPayment.toFixed(2)}" step="0.01" value="${loanData.monthlyPayment.toFixed(2)}">
+      
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button id="pay-loan" style="flex: 1; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+          ชำระเงิน
+        </button>
+        <button id="pay-full" style="flex: 1; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+          ชำระเต็มจำนวน
+        </button>
+      </div>
+    </div>
+
+    <!-- ประวัติการชำระ -->
+    <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.2);">
+      <h3 style="margin: 0 0 15px 0; font-size: 18px;">📜 ประวัติการชำระ (${loanData.payments.length} รายการ)</h3>
+      <div id="payment-history" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+  `;
+
+  sectionRecords.style.display = "none";
+  sectionList.style.display = "none";
+  sectionChart.style.display = "none";
+
+  // แสดงประวัติการชำระ
+  displayPaymentHistory(loanData);
+
+  // ปุ่มชำระเงิน
+  document.getElementById("pay-loan").onclick = () => {
+    const paymentAmount = +document.getElementById("payment-amount").value;
+    
+    if (!paymentAmount || paymentAmount <= 0) {
+      alert("กรุณากรอกจำนวนเงินที่ต้องการชำระ");
+      return;
+    }
+
+    if (paymentAmount > loanData.remainingBalance) {
+      if (!confirm(`จำนวนเงินมากกว่ายอดคงเหลือ (${loanData.remainingBalance.toFixed(2)} บาท)\nต้องการชำระเต็มจำนวนใช่หรือไม่?`)) {
+        return;
+      }
+    }
+
+    makePayment(loanData, paymentAmount);
+  };
+
+  // ปุ่มชำระเต็มจำนวน
+  document.getElementById("pay-full").onclick = () => {
+    if (!confirm(`ต้องการชำระเงินคงเหลือทั้งหมด ${loanData.remainingBalance.toFixed(2)} บาท ใช่หรือไม่?`)) {
+      return;
+    }
+    makePayment(loanData, loanData.remainingBalance);
+  };
+
+  // ปุ่มลบข้อมูล
+  document.getElementById("reset-loan").onclick = () => {
+    if (!confirm("ต้องการลบข้อมูลเงินกู้ทั้งหมดใช่หรือไม่?\n(การกระทำนี้ไม่สามารถย้อนกลับได้)")) {
+      return;
+    }
+    localStorage.removeItem("studentLoan");
+    showNotification("ลบข้อมูลเงินกู้สำเร็จ! ✅");
+    showStudentLoanPage();
+  };
+}
+
+function makePayment(loanData, paymentAmount) {
+  if (loanData.remainingBalance <= 0) {
+    alert("ชำระเงินครบแล้ว! 🎉");
+    return;
   }
 
+  // คำนวณดอกเบี้ยของเดือนนี้
+  const interestThisMonth = loanData.remainingBalance * loanData.monthlyRate;
+  
+  // จำนวนที่ไปลดเงินต้น
+  const principalPayment = Math.min(paymentAmount - interestThisMonth, loanData.remainingBalance);
+  
+  // ยอดคงเหลือใหม่
+  const newBalance = Math.max(0, loanData.remainingBalance - principalPayment);
+
+  // บันทึกการชำระ
+  loanData.payments.push({
+    month: loanData.currentMonth + 1,
+    date: new Date().toISOString(),
+    paymentAmount: paymentAmount,
+    interestPaid: interestThisMonth,
+    principalPaid: principalPayment,
+    remainingBalance: newBalance
+  });
+
+  loanData.currentMonth++;
+  loanData.remainingBalance = newBalance;
+
+  // บันทึกลง localStorage
+  localStorage.setItem("studentLoan", JSON.stringify(loanData));
+
+  if (newBalance <= 0) {
+    showNotification("🎉 ยินดีด้วย! ชำระเงินกู้ครบถ้วนแล้ว!");
+  } else {
+    showNotification("บันทึกการชำระเงินสำเร็จ! ✅");
+  }
+
+  // รีเฟรชหน้า
+  showStudentLoanPage();
+}
+
+function displayPaymentHistory(loanData) {
+  const historyDiv = document.getElementById("payment-history");
+  
+  if (loanData.payments.length === 0) {
+    historyDiv.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px; opacity: 0.7;">
+        <div style="font-size: 48px; margin-bottom: 15px;">📝</div>
+        <p style="margin: 0; font-size: 16px;">ยังไม่มีประวัติการชำระ</p>
+      </div>
+    `;
+    return;
+  }
+
+  // เรียงจากล่าสุดไปเก่าสุด
+  const sortedPayments = [...loanData.payments].reverse();
+  
+  let html = "";
+  sortedPayments.forEach((payment, index) => {
+    const date = new Date(payment.date);
+    const dateStr = date.toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    html += `
+      <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid #22c55e;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+          <div>
+            <div style="font-weight: 600; font-size: 15px;">งวดที่ ${payment.month}</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">${dateStr}</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 18px; font-weight: 700; color: #22c55e;">-${payment.paymentAmount.toLocaleString(undefined, {maximumFractionDigits: 2})}</div>
+            <div style="font-size: 12px; opacity: 0.8;">บาท</div>
+          </div>
+        </div>
+        <div style="font-size: 13px; opacity: 0.9; line-height: 1.6;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>ดอกเบี้ย:</span>
+            <span><strong>${payment.interestPaid.toLocaleString(undefined, {maximumFractionDigits: 2})}</strong> บาท</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>เงินต้น:</span>
+            <span><strong>${payment.principalPaid.toLocaleString(undefined, {maximumFractionDigits: 2})}</strong> บาท</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255, 255, 255, 0.2);">
+            <span>คงเหลือ:</span>
+            <span style="color: ${payment.remainingBalance > 0 ? '#f59e0b' : '#22c55e'};"><strong>${payment.remainingBalance.toLocaleString(undefined, {maximumFractionDigits: 2})}</strong> บาท</span>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  historyDiv.innerHTML = html;
+}
   // ฟังก์ชันคำนวณเงินปันผลกองทุน
   function showDividendPage() {
     app.innerHTML = `
