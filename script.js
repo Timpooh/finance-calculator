@@ -43,7 +43,9 @@ window.addEventListener("DOMContentLoaded", () => {
   if (username) {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        username.innerText = "สวัสดี, " + user.displayName;
+        // ใช้ displayName ถ้ามี ถ้าไม่มีใช้ email แทน
+        const displayText = user.displayName || user.email || "ผู้ใช้งาน";
+        username.innerText = "สวัสดี, " + displayText;
       } else {
         window.location.href = "index.html";
       }
