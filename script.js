@@ -43,9 +43,18 @@ window.addEventListener("DOMContentLoaded", () => {
   if (username) {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        // ใช้ displayName ถ้ามี ถ้าไม่มีใช้ email แทน
-        const displayText = user.displayName || user.email || "ผู้ใช้งาน";
-        username.innerText = "สวัสดี, " + displayText;
+        // แสดงเฉพาะไอคอนผู้ใช้และข้อความทักทาย
+        username.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+              👤
+            </div>
+            <div>
+              <div style="font-size: 14px; opacity: 0.8;">ยินดีต้อนรับสู่</div>
+              <div style="font-size: 18px; font-weight: 700;">Finance Calculator</div>
+            </div>
+          </div>
+        `;
       } else {
         window.location.href = "index.html";
       }
