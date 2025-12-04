@@ -1094,5 +1094,56 @@ function showDividendPage() {
     }
   `;
   document.head.appendChild(style);
+// วางโค้ดนี้ในส่วน Event Listeners ของ script.js (หลังฟังก์ชัน showDividendPage)
 
+// Event Listeners สำหรับปุ่มเมนู - แก้ไขให้ใช้งานได้
+if (btnExpense) {
+  btnExpense.addEventListener("click", () => {
+    console.log("Expense button clicked"); // สำหรับ debug
+    showExpensePage();
+  });
+}
+
+if (btnTax) {
+  btnTax.addEventListener("click", () => {
+    console.log("Tax button clicked"); // สำหรับ debug
+    showTaxPage();
+  });
+}
+
+if (btnInterest) {
+  btnInterest.addEventListener("click", () => {
+    console.log("Interest button clicked"); // สำหรับ debug
+    showInterestPage();
+  });
+}
+
+if (btnStudentLoan) {
+  btnStudentLoan.addEventListener("click", () => {
+    console.log("Student Loan button clicked"); // สำหรับ debug
+    showStudentLoanPage();
+  });
+}
+
+if (btnDividend) {
+  btnDividend.addEventListener("click", () => {
+    console.log("Dividend button clicked"); // สำหรับ debug
+    showDividendPage();
+  });
+}
+
+if (btnHome) {
+  btnHome.addEventListener("click", () => {
+    console.log("Home button clicked"); // สำหรับ debug
+    showDashboard();
+  });
+}
+
+// เริ่มต้นที่หน้า Dashboard
+if (listEl) {
+  showDashboard();
+  renderRecords();
+  updateTotal();
+  updateChart();
+}
 });
