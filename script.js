@@ -21,6 +21,8 @@ window.addEventListener("DOMContentLoaded", () => {
   const btnExpense   = document.getElementById("btn-expense");
   const btnTax        = document.getElementById("btn-tax");
   const btnInterest   = document.getElementById("btn-interest");
+  const btnStudentLoan = document.getElementById("btn-student-loan");
+  const btnDividend   = document.getElementById("btn-dividend");
   const btnHome       = document.getElementById("btn-home");
   const btnLogout     = document.getElementById("btn-logout");
   const username      = document.getElementById("username");
@@ -327,10 +329,16 @@ window.addEventListener("DOMContentLoaded", () => {
           <p>คำนวณดอกเบี้ยธรรมดาและทบต้น</p>
         </div>
 
-        <div class="dashboard-card" id="card-savings">
-          <div class="icon">🎯</div>
-          <h3>เป้าหมายออม</h3>
-          <p>วางแผนและติดตามเป้าหมายการออมเงิน</p>
+        <div class="dashboard-card" id="card-student-loan">
+          <div class="icon">🎓</div>
+          <h3>คำนวณ กยศ.</h3>
+          <p>คำนวณการผ่อนชำระเงินกู้ กยศ.</p>
+        </div>
+
+        <div class="dashboard-card" id="card-dividend">
+          <div class="icon">💵</div>
+          <h3>เงินปันผลกองทุน</h3>
+          <p>คำนวณผลตอบแทนจากกองทุนรวม</p>
         </div>
       </div>
     `;
@@ -351,9 +359,13 @@ window.addEventListener("DOMContentLoaded", () => {
       if (navMenu) navMenu.style.display = "flex";
       showInterestPage();
     };
-    document.getElementById("card-savings").onclick = () => {
+    document.getElementById("card-student-loan").onclick = () => {
       if (navMenu) navMenu.style.display = "flex";
-      showSavingsPage();
+      showStudentLoanPage();
+    };
+    document.getElementById("card-dividend").onclick = () => {
+      if (navMenu) navMenu.style.display = "flex";
+      showDividendPage();
     };
   }
 
@@ -578,127 +590,190 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function showSavingsPage() {
-    let savingsGoals = JSON.parse(localStorage.getItem("savingsGoals")) || [];
+  // ฟังก์ชันคำนวณ กยศ.
+  function showStudentLoanPage() {
+    app.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <div style="font-size: 36px;">🎓</div>
+        <div>
+          <h2 style="margin: 0; font-size: 24px;">คำนวณเงินกู้ กยศ.</h2>
+          <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">คำนวณการผ่อนชำระเงินกู้ยืมเพื่อการศึกษา</p>
+        </div>
+      </div>
 
-    function renderSavingsGoals() {
-      let goalsHTML = "";
+      <label>จำนวนเงินกู้ทั้งหมด (บาท)</label>
+      <input id="loan-amount" type="number" placeholder="เช่น 200000" step="0.01">
+      
+      <label>อัตราดอกเบี้ยต่อปี (%)</label>
+      <input id="loan-rate" type="number" placeholder="กยศ. ประมาณ 1%" step="0.01" value="1">
 
-      if (savingsGoals.length === 0) {
-        goalsHTML = `
-          <div style="text-align: center; padding: 40px 20px; opacity: 0.7;">
-            <div style="font-size: 48px; margin-bottom: 15px;">🎯</div>
-            <p style="margin: 0; font-size: 16px;">ยังไม่มีเป้าหมายการออม</p>
-            <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">เริ่มต้นวางแผนการออมเงินของคุณได้เลย</p>
-          </div>
-        `;
-      } else {
-        savingsGoals.forEach(goal => {
-          const progress = (goal.current / goal.target) * 100;
-          const progressColor = progress >= 100 ? "#22c55e" : progress >= 50 ? "#f59e0b" : "#667eea";
-          
-          goalsHTML += `
-            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.2);">
-              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                <div>
-                  <h4 style="margin: 0 0 5px 0; font-size: 18px;">${goal.name}</h4>
-                  <p style="margin: 0; opacity: 0.8; font-size: 13px;">${goal.current.toLocaleString()} / ${goal.target.toLocaleString()} บาท</p>
-                </div>
-                <button onclick="deleteSavingsGoal(${goal.id})" style="background: rgba(239, 68, 68, 0.8); padding: 8px 15px; font-size: 13px; width: auto; margin: 0; border-radius: 8px; border: none; cursor: pointer; color: white;">🗑️</button>
-              </div>
-              
-              <div style="background: rgba(0, 0, 0, 0.2); height: 12px; border-radius: 20px; overflow: hidden; margin-bottom: 10px;">
-                <div style="background: ${progressColor}; height: 100%; width: ${Math.min(progress, 100)}%; transition: width 0.3s ease;"></div>
-              </div>
-              
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 14px; font-weight: 600;">${progress.toFixed(1)}% สำเร็จ</span>
-                <button onclick="addToSavingsGoal(${goal.id})" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 8px 15px; font-size: 13px; width: auto; margin: 0; border-radius: 8px; border: none; cursor: pointer; color: white; font-weight: 600;">➕ เพิ่มเงิน</button>
-              </div>
-            </div>
-          `;
-        });
+      <label>ระยะเวลาผ่อนชำระ (ปี)</label>
+      <input id="loan-years" type="number" placeholder="เช่น 15" min="1">
+
+      <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.2);">
+        <p style="margin: 0 0 8px 0; font-weight: bold;">💡 ข้อมูล กยศ.</p>
+        <p style="margin: 4px 0;">• อัตราดอกเบี้ย กยศ. ปัจจุบันอยู่ที่ประมาณ <strong>1% ต่อปี</strong></p>
+        <p style="margin: 4px 0;">• เริ่มชำระหลังจบการศึกษา 2 ปี</p>
+        <p style="margin: 4px 0;">• ระยะเวลาผ่อนชำระสูงสุด 15 ปี</p>
+      </div>
+
+      <button id="calc-student-loan">คำนวณ</button>
+      <div id="student-loan-result" class="result"></div>
+    `;
+
+    sectionRecords.style.display = "none";
+    sectionList.style.display = "none";
+    sectionChart.style.display = "none";
+
+    document.getElementById("calc-student-loan").onclick = () => {
+      const loanAmount = +document.getElementById("loan-amount").value;
+      const annualRate = +document.getElementById("loan-rate").value / 100;
+      const years = +document.getElementById("loan-years").value;
+
+      if (!loanAmount || loanAmount <= 0) {
+        alert("กรุณากรอกจำนวนเงินกู้ที่ถูกต้อง");
+        return;
       }
 
-      app.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-          <div style="font-size: 36px;">🎯</div>
-          <div>
-            <h2 style="margin: 0; font-size: 24px;">เป้าหมายออม</h2>
-            <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">วางแผนและติดตามเป้าหมายการออมเงิน</p>
-          </div>
-        </div>
+      if (!annualRate || annualRate < 0) {
+        alert("กรุณากรอกอัตราดอกเบี้ยที่ถูกต้อง");
+        return;
+      }
 
-        <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
-          <h3 style="margin: 0 0 15px 0; font-size: 18px;">เพิ่มเป้าหมายใหม่</h3>
-          
-          <label>ชื่อเป้าหมาย</label>
-          <input id="goalName" type="text" placeholder="เช่น ซื้อรถยนต์">
-          
-          <label>จำนวนเงินเป้าหมาย (บาท)</label>
-          <input id="goalTarget" type="number" placeholder="เช่น 500000">
-          
-          <button id="addGoalBtn">เพิ่มเป้าหมาย</button>
-        </div>
+      if (!years || years <= 0) {
+        alert("กรุณากรอกระยะเวลาผ่อนชำระที่ถูกต้อง");
+        return;
+      }
 
-        <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
-          <h3 style="margin: 0 0 20px 0; font-size: 18px;">เป้าหมายของคุณ</h3>
-          ${goalsHTML}
+      // คำนวณดอกเบี้ยต่อเดือน
+      const monthlyRate = annualRate / 12;
+      const totalMonths = years * 12;
+
+      // สูตรคำนวณการผ่อนชำระรายเดือน (Amortization)
+      let monthlyPayment;
+      if (monthlyRate === 0) {
+        monthlyPayment = loanAmount / totalMonths;
+      } else {
+        monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+      }
+
+      const totalPayment = monthlyPayment * totalMonths;
+      const totalInterest = totalPayment - loanAmount;
+
+      document.getElementById("student-loan-result").innerHTML = `
+        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+          <p style="margin: 0 0 15px 0; font-size: 18px;"><strong>📊 สรุปการคำนวณ กยศ.</strong></p>
+          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+          <p style="margin: 8px 0;">จำนวนเงินกู้: <strong>${loanAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
+          <p style="margin: 8px 0;">อัตราดอกเบี้ย: <strong>${(annualRate * 100).toFixed(2)}% ต่อปี</strong></p>
+          <p style="margin: 8px 0;">ระยะเวลาผ่อน: <strong>${years} ปี (${totalMonths} เดือน)</strong></p>
+          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+          <p style="margin: 12px 0 8px 0; font-size: 22px;"><strong>💰 ผ่อนชำระต่อเดือน: ${monthlyPayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+          <p style="margin: 8px 0; font-size: 16px;">ดอกเบี้ยรวม: ${totalInterest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
+          <p style="margin: 8px 0; font-size: 16px;">ยอดชำระรวมทั้งหมด: ${totalPayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
         </div>
       `;
 
-      sectionRecords.style.display = "none";
-      sectionList.style.display = "none";
-      sectionChart.style.display = "none";
+      showNotification("คำนวณ กยศ. สำเร็จ! ✅");
+    };
+  }
 
-      const addGoalBtn = document.getElementById("addGoalBtn");
-      if (addGoalBtn) {
-        addGoalBtn.onclick = () => {
-          const name = document.getElementById("goalName").value.trim();
-          const target = +document.getElementById("goalTarget").value;
+  // ฟังก์ชันคำนวณเงินปันผลกองทุน
+  function showDividendPage() {
+    app.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <div style="font-size: 36px;">💵</div>
+        <div>
+          <h2 style="margin: 0; font-size: 24px;">คำนวณเงินปันผลกองทุน</h2>
+          <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">คำนวณผลตอบแทนจากการลงทุนกองทุนรวม</p>
+        </div>
+      </div>
 
-          if (!name || !target || target <= 0) {
-            alert("กรุณากรอกข้อมูลให้ครบถ้วน");
-            return;
-          }
-
-          savingsGoals.push({
-            id: Date.now(),
-            name,
-            target,
-            current: 0
-          });
-
-          localStorage.setItem("savingsGoals", JSON.stringify(savingsGoals));
-          showNotification("เพิ่มเป้าหมายสำเร็จ! 🎯");
-          renderSavingsGoals();
-        };
-      }
-    }
-
-    window.deleteSavingsGoal = (id) => {
-      if (!confirm("ต้องการลบเป้าหมายนี้ใช่หรือไม่?")) return;
+      <label>จำนวนเงินลงทุนเริ่มต้น (บาท)</label>
+      <input id="invest-amount" type="number" placeholder="เช่น 100000" step="0.01">
       
-      savingsGoals = savingsGoals.filter(g => g.id !== id);
-      localStorage.setItem("savingsGoals", JSON.stringify(savingsGoals));
-      showNotification("ลบเป้าหมายสำเร็จ! ✅");
-      renderSavingsGoals();
-    };
+      <label>ผลตอบแทนเฉลี่ยต่อปี (%)</label>
+      <input id="return-rate" type="number" placeholder="เช่น 5-8%" step="0.01">
 
-    window.addToSavingsGoal = (id) => {
-      const amount = prompt("ระบุจำนวนเงินที่ต้องการเพิ่ม (บาท):");
-      if (!amount || isNaN(amount) || +amount <= 0) return;
+      <label>ระยะเวลาลงทุน (ปี)</label>
+      <input id="invest-years" type="number" placeholder="เช่น 10" min="1">
 
-      const goal = savingsGoals.find(g => g.id === id);
-      if (goal) {
-        goal.current += +amount;
-        localStorage.setItem("savingsGoals", JSON.stringify(savingsGoals));
-        showNotification("เพิ่มเงินสำเร็จ! 💰");
-        renderSavingsGoals();
+      <label>ลงทุนเพิ่มสม่ำเสมอทุกเดือน (บาท)</label>
+      <input id="monthly-invest" type="number" placeholder="0 หากไม่มี (ไม่บังคับ)" step="0.01" value="0">
+
+      <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.2);">
+        <p style="margin: 0 0 8px 0; font-weight: bold;">💡 ข้อมูลเพิ่มเติม</p>
+        <p style="margin: 4px 0;">• กองทุนหุ้น: ผลตอบแทนเฉลี่ย 8-12% ต่อปี (ความเสี่ยงสูง)</p>
+        <p style="margin: 4px 0;">• กองทุนผสม: ผลตอบแทนเฉลี่ย 5-8% ต่อปี (ความเสี่ยงปานกลาง)</p>
+        <p style="margin: 4px 0;">• กองทุนตราสารหนี้: ผลตอบแทนเฉลี่ย 2-4% ต่อปี (ความเสี่ยงต่ำ)</p>
+        <p style="margin: 4px 0;">• ค่าใช้จ่ายและภาษีอาจลดผลตอบแทนจริง</p>
+      </div>
+
+      <button id="calc-dividend">คำนวณ</button>
+      <div id="dividend-result" class="result"></div>
+    `;
+
+    sectionRecords.style.display = "none";
+    sectionList.style.display = "none";
+    sectionChart.style.display = "none";
+
+    document.getElementById("calc-dividend").onclick = () => {
+      const initialInvest = +document.getElementById("invest-amount").value;
+      const annualReturn = +document.getElementById("return-rate").value / 100;
+      const years = +document.getElementById("invest-years").value;
+      const monthlyInvest = +document.getElementById("monthly-invest").value || 0;
+
+      if (!initialInvest || initialInvest < 0) {
+        alert("กรุณากรอกจำนวนเงินลงทุนที่ถูกต้อง");
+        return;
       }
-    };
 
-    renderSavingsGoals();
+      if (!annualReturn || annualReturn <= 0) {
+        alert("กรุณากรอกผลตอบแทนที่ถูกต้อง");
+        return;
+      }
+
+      if (!years || years <= 0) {
+        alert("กรุณากรอกระยะเวลาลงทุนที่ถูกต้อง");
+        return;
+      }
+
+      // คำนวณมูลค่าสุดท้าย (Future Value with Monthly Contributions)
+      const monthlyRate = annualReturn / 12;
+      const totalMonths = years * 12;
+
+      // มูลค่าจากเงินลงทุนเริ่มต้น (ทบต้น)
+      const futureValueInitial = initialInvest * Math.pow(1 + annualReturn, years);
+
+      // มูลค่าจากการลงทุนรายเดือน
+      let futureValueMonthly = 0;
+      if (monthlyInvest > 0 && monthlyRate > 0) {
+        futureValueMonthly = monthlyInvest * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate);
+      } else if (monthlyInvest > 0) {
+        futureValueMonthly = monthlyInvest * totalMonths;
+      }
+
+      const totalFutureValue = futureValueInitial + futureValueMonthly;
+      const totalInvested = initialInvest + (monthlyInvest * totalMonths);
+      const totalReturn = totalFutureValue - totalInvested;
+
+      document.getElementById("dividend-result").innerHTML = `
+        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.2);">
+          <p style="margin: 0 0 15px 0; font-size: 18px;"><strong>📊 สรุปการคำนวณผลตอบแทน</strong></p>
+          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+          <p style="margin: 8px 0;">เงินลงทุนเริ่มต้น: <strong>${initialInvest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
+          <p style="margin: 8px 0;">ลงทุนเพิ่มรายเดือน: <strong>${monthlyInvest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> บาท</p>
+          <p style="margin: 8px 0;">ผลตอบแทนเฉลี่ย: <strong>${(annualReturn * 100).toFixed(2)}% ต่อปี</strong></p>
+          <p style="margin: 8px 0;">ระยะเวลา: <strong>${years} ปี</strong></p>
+          <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+          <p style="margin: 8px 0; font-size: 16px;">เงินลงทุนรวมทั้งหมด: ${totalInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</p>
+          <p style="margin: 12px 0 8px 0; font-size: 20px; color: #22c55e;"><strong>💰 กำไรจากการลงทุน: +${totalReturn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+          <p style="margin: 8px 0; font-size: 22px;"><strong>💵 มูลค่ารวมทั้งหมด: ${totalFutureValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท</strong></p>
+        </div>
+      `;
+
+      showNotification("คำนวณเงินปันผลสำเร็จ! ✅");
+    };
   }
 
   // Event Listeners สำหรับปุ่มเมนู
@@ -712,6 +787,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (btnInterest) {
     btnInterest.onclick = () => showInterestPage();
+  }
+
+  if (btnStudentLoan) {
+    btnStudentLoan.onclick = () => showStudentLoanPage();
+  }
+
+  if (btnDividend) {
+    btnDividend.onclick = () => showDividendPage();
   }
 
   if (btnHome) {
