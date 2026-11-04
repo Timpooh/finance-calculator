@@ -5,7 +5,7 @@
 
 body {
   margin: 0;
-  background: linear-gradient(135deg, #794902 0%, #f5f4f6 100%);
+  background: linear-gradient(135deg, #794902 0%, #764ba2 100%);
   min-height: 100vh;
   color: white;
 }
@@ -205,7 +205,7 @@ label {
 
 /* ปุ่ม */
 button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #794902 0%, #faf9fb 100%);
   color: white;
   cursor: pointer;
   font-weight: 600;
@@ -304,7 +304,7 @@ canvas {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #794902 0%, #ffffff 100%);
 }
 
 .login-card {
